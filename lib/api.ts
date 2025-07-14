@@ -13,13 +13,13 @@ interface RequestOptions {
 }
 
 class ApiClient {
-  private baseURL = ""
+  private readonly baseURL = ""
 
   constructor(baseURL = "") {
     this.baseURL = baseURL
   }
 
-  private getAuthHeaders(): Record<string, string> {
+  private getAuthHeaders(): { "x-jwt-token": string } | {} {
     const token = localStorage.getItem("jwt-token")
     return token ? { "x-jwt-token": token } : {}
   }
@@ -31,7 +31,7 @@ class ApiClient {
       if (response.ok) {
         return {
           success: true,
-          data: data.Data || data.data || data,
+          data: data.data || data.data || data,
           message: data.message || "操作成功",
         }
       } else {
