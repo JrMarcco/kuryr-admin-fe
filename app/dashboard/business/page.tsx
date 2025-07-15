@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,9 +20,10 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Edit, Trash2, Eye, EyeOff, Users, Loader2, RefreshCw } from "lucide-react"
+import { Plus, Edit, Trash2, Eye, EyeOff, Users, Loader2, RefreshCw, Settings } from "lucide-react"
 import { OperatorsModal } from "@/components/operators-modal"
 import { Pagination } from "@/components/pagination"
+import { Breadcrumb } from "@/components/breadcrumb"
 import { businessApi } from "@/lib/business-api"
 import { formatTimestamp } from "@/lib/utils"
 import { useApi } from "@/hooks/use-api"
@@ -36,6 +38,7 @@ interface Business {
 }
 
 export default function BusinessManagePage() {
+  const router = useRouter()
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
@@ -107,12 +110,12 @@ export default function BusinessManagePage() {
         prev.map((business) =>
           business.id === editingBusiness.id
             ? {
-              ...business,
-              biz_name: formData.biz_name,
-              biz_key: formData.biz_key,
-              biz_secret: formData.biz_secret,
-              updated_at: now,
-            }
+                ...business,
+                biz_name: formData.biz_name,
+                biz_key: formData.biz_key,
+                biz_secret: formData.biz_secret,
+                updated_at: now,
+              }
             : business,
         ),
       )
@@ -185,10 +188,18 @@ export default function BusinessManagePage() {
     })
   }
 
+  const handleConfigManage = (business: Business) => {
+    // 跳转到配置管理页面，传递业务方信息
+    router.push(`/dashboard/business/config?id=${business.id}&name=${encodeURIComponent(business.biz_name)}`)
+  }
+
   const totalPages = Math.ceil(totalCount / pageSize)
 
   return (
     <div className="p-6 space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -326,79 +337,99 @@ export default function BusinessManagePage() {
             <div className="text-center py-12 text-gray-400">{businessListError ? "加载失败" : "暂无业务方数据"}</div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-gray-800/50">
-                    <TableHead className="text-gray-300">业务名</TableHead>
-                    <TableHead className="text-gray-300">业务Key</TableHead>
-                    <TableHead className="text-gray-300">业务Secret</TableHead>
-                    <TableHead className="text-gray-300">操作员管理</TableHead>
-                    <TableHead className="text-gray-300">创建时间</TableHead>
-                    <TableHead className="text-gray-300">更新时间</TableHead>
-                    <TableHead className="text-gray-300">操作</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {businesses.map((business) => (
-                    <TableRow key={business.id} className="border-gray-800 hover:bg-gray-800/50">
-                      <TableCell className="text-white font-medium">{business.biz_name}</TableCell>
-                      <TableCell className="text-gray-300">
-                        <Badge variant="secondary" className="bg-gray-800 text-gray-300">
-                          {business.biz_key}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-mono text-sm">
-                            {showSecrets[business.id] ? business.biz_secret : maskSecret(business.biz_secret)}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleSecretVisibility(business.id)}
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-white"
-                          >
-                            {showSecrets[business.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewOperators(business)}
-                          className="text-orange-400 hover:text-orange-300 hover:bg-gray-800"
-                        >
-                          <Users className="h-4 w-4 mr-1" />
-                          查看操作员
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-gray-300 text-sm">{formatTimestamp(business.created_at)}</TableCell>
-                      <TableCell className="text-gray-300 text-sm">{formatTimestamp(business.updated_at)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(business)}
-                            className="h-8 w-8 p-0 text-gray-400 hover:text-orange-500"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(business.id)}
-                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table className="min-w-full">
+                  <TableHeader>
+                    <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                      <TableHead className="text-gray-300 text-left min-w-[120px]">业务名</TableHead>
+                      <TableHead className="text-gray-300 text-left min-w-[140px]">业务Key</TableHead>
+                      <TableHead className="text-gray-300 text-left min-w-[180px]">业务Secret</TableHead>
+                      <TableHead className="text-gray-300 text-left min-w-[140px]">创建时间</TableHead>
+                      <TableHead className="text-gray-300 text-left min-w-[140px]">更新时间</TableHead>
+                      <TableHead className="text-gray-300 text-center min-w-[120px]">操作员管理</TableHead>
+                      <TableHead className="text-gray-300 text-center min-w-[120px]">配置管理</TableHead>
+                      <TableHead className="text-gray-300 text-center min-w-[100px]">操作</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {businesses.map((business) => (
+                      <TableRow key={business.id} className="border-gray-800 hover:bg-gray-800/50">
+                        <TableCell className="text-white font-medium text-left align-top py-4">
+                          {business.biz_name}
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-left align-top py-4">
+                          <Badge variant="secondary" className="bg-gray-800 text-gray-300">
+                            {business.biz_key}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-left align-top py-4">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-mono text-sm">
+                              {showSecrets[business.id] ? business.biz_secret : maskSecret(business.biz_secret)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleSecretVisibility(business.id)}
+                              className="h-6 w-6 p-0 text-gray-400 hover:text-white flex-shrink-0"
+                            >
+                              {showSecrets[business.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-sm text-left align-top py-4 whitespace-nowrap">
+                          {formatTimestamp(business.created_at)}
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-sm text-left align-top py-4 whitespace-nowrap">
+                          {formatTimestamp(business.updated_at)}
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-center align-top py-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewOperators(business)}
+                            className="text-orange-400 hover:text-orange-300 hover:bg-gray-800 whitespace-nowrap"
+                          >
+                            <Users className="h-4 w-4 mr-1" />
+                            查看操作员
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-gray-300 text-center align-top py-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleConfigManage(business)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-800 whitespace-nowrap"
+                          >
+                            <Settings className="h-4 w-4 mr-1" />
+                            查看配置
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-center align-top py-4">
+                          <div className="flex items-center justify-center space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(business)}
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-orange-500"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(business.id)}
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
 
               {/* Pagination */}
               <Pagination

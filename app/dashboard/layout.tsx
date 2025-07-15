@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Building2, LogOut, Menu, X } from "lucide-react"
+import { Building2, LogOut, Menu, X, Settings, ChevronDown, ChevronRight } from "lucide-react"
 import { authApi } from "@/lib/auth-api"
 
 export default function DashboardLayout({
@@ -17,6 +17,7 @@ export default function DashboardLayout({
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [businessMenuOpen, setBusinessMenuOpen] = useState(true) // 默认展开业务方管理菜单
   const router = useRouter()
   const pathname = usePathname()
 
@@ -53,6 +54,14 @@ export default function DashboardLayout({
       href: "/dashboard/business",
       icon: Building2,
       active: pathname === "/dashboard/business",
+      children: [
+        {
+          name: "配置管理",
+          href: "/dashboard/business/config",
+          icon: Settings,
+          active: pathname.startsWith("/dashboard/business/config"),
+        },
+      ],
     },
   ]
 
@@ -91,18 +100,63 @@ export default function DashboardLayout({
           <nav className="flex-1 px-4 py-6 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon
+              const hasChildren = item.children && item.children.length > 0
+              const isBusinessMenu = item.name === "业务方管理"
+
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    item.active ? "bg-orange-600 text-white" : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </Link>
+                <div key={item.href}>
+                  {/* 主菜单项 */}
+                  <div className="flex items-center">
+                    <Link
+                      href={item.href}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors flex-1 ${
+                        item.active ? "bg-orange-600 text-white" : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.name}
+                    </Link>
+                    {hasChildren && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => isBusinessMenu && setBusinessMenuOpen(!businessMenuOpen)}
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800 ml-1"
+                      >
+                        {isBusinessMenu && businessMenuOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* 子菜单项 */}
+                  {hasChildren && isBusinessMenu && businessMenuOpen && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {item.children.map((child) => {
+                        const ChildIcon = child.icon
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
+                              child.active
+                                ? "bg-orange-600/80 text-white"
+                                : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                            }`}
+                          >
+                            <ChildIcon className="mr-3 h-4 w-4" />
+                            {child.name}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
           </nav>
