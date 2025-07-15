@@ -1,3 +1,5 @@
+import { authApi } from "./auth-api"
+
 interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -13,18 +15,23 @@ interface RequestOptions {
 }
 
 class ApiClient {
-  private readonly baseURL = ""
+  private readonly baseURL: string
+  private isRefreshing = false
 
   constructor(baseURL = "") {
     this.baseURL = baseURL
   }
 
-  private getAuthHeaders(): { "x-jwt-token": string } | {} {
-    const token = localStorage.getItem("jwt-token")
-    return token ? { "x-jwt-token": token } : {}
+  private getAuthHeaders(): { "x-access-token": string } | {} {
+    const token = localStorage.getItem("access-token")
+    return token ? { "x-access-token": token } : {}
   }
 
-  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  private async handleResponse<T>(
+    response: Response,
+    endpoint: string,
+    options: RequestOptions,
+  ): Promise<ApiResponse<T>> {
     try {
       const data = await response.json()
 
@@ -36,10 +43,20 @@ class ApiClient {
         }
       } else {
         // 处理认证失败
-        if (response.status === 401) {
-          localStorage.removeItem("jwt-token")
-          localStorage.removeItem("isLoggedIn")
-          localStorage.removeItem("username")
+        if (response.status === 401 && endpoint !== "/v1/user/refresh_token") {
+          if (!this.isRefreshing) {
+            this.isRefreshing = true
+            const refreshResponse = await authApi.refreshToken()
+            this.isRefreshing = false
+
+            if (refreshResponse.success) {
+              // 重新发起原始请求
+              return this.request<T>(endpoint, options)
+            }
+          }
+
+          // 如果刷新失败或正在刷新中，则登出
+          authApi.logout()
           window.location.href = "/"
           return {
             success: false,
@@ -87,7 +104,7 @@ class ApiClient {
       }
 
       const response = await fetch(url, config)
-      return await this.handleResponse<T>(response)
+      return await this.handleResponse<T>(response, endpoint, options)
     } catch (error) {
       console.error("API request failed:", error)
       return {
