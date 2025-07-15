@@ -42,47 +42,13 @@ export function OperatorsModal({ isOpen, onClose, businessId, businessName }: Op
       } else {
         setError(response.message || "获取操作员列表失败")
         // 模拟数据作为后备
-        setOperators([
-          {
-            id: "1",
-            username: "operator1",
-            name: "张三",
-            email: "zhangsan@example.com",
-            createdAt: "2024-01-15 10:30:00",
-            updatedAt: "2024-01-20 14:20:00",
-          },
-          {
-            id: "2",
-            username: "operator2",
-            name: "李四",
-            email: "lisi@example.com",
-            createdAt: "2024-01-10 09:15:00",
-            updatedAt: "2024-01-18 16:45:00",
-          },
-        ])
+        setOperators([])
       }
     } catch (error) {
       console.error("Fetch operators error:", error)
       setError("网络错误，请稍后重试")
       // 模拟数据作为后备
-      setOperators([
-        {
-          id: "1",
-          username: "operator1",
-          name: "张三",
-          email: "zhangsan@example.com",
-          createdAt: "2024-01-15 10:30:00",
-          updatedAt: "2024-01-20 14:20:00",
-        },
-        {
-          id: "2",
-          username: "operator2",
-          name: "李四",
-          email: "lisi@example.com",
-          createdAt: "2024-01-10 09:15:00",
-          updatedAt: "2024-01-18 16:45:00",
-        },
-      ])
+      setOperators([])
     } finally {
       setLoading(false)
     }
