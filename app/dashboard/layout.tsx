@@ -186,56 +186,60 @@ export default function DashboardLayout({
         lg:translate-x-0 lg:static lg:inset-0
       `}
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-900">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">K</span>
-            </div>
-            <span className="text-xl font-bold text-white">Kuryr</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {sidebarItems.map((item) => renderSidebarItem(item))}
-        </nav>
-
-        {/* 用户信息和登出 */}
-        <div className="border-t border-gray-900 p-4">
-          <Card className="bg-gray-900 border-gray-800">
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">A</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Admin</p>
-                    <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
-                      管理员
-                    </Badge>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
-                  title="登出"
-                >
-                  {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-                </Button>
+        <div className="flex flex-col h-full">
+          {/* Logo section */}
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-900">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">K</span>
               </div>
-            </CardContent>
-          </Card>
+              <span className="text-xl font-bold text-white">Kuryr</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-gray-400 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Navigation - takes remaining space */}
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            {sidebarItems.map((item) => renderSidebarItem(item))}
+          </nav>
+
+          {/* User info - stays at bottom */}
+          <div className="border-t border-gray-900 p-4">
+            <Card className="bg-gray-900 border-gray-800">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">A</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">Admin</p>
+                      <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
+                        管理员
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
+                    title="登出"
+                  >
+                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
