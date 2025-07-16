@@ -38,16 +38,16 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     icon: Building2,
-    label: "业务方管理",
+    label: "业务管理",
     children: [
       {
         icon: Building2,
-        label: "业务方管理",
+        label: "业务方信息",
         href: "/dashboard/business",
       },
       {
         icon: Settings,
-        label: "配置管理",
+        label: "业务方配置",
         href: "/dashboard/business/config",
       },
     ],
