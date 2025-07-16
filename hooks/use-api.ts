@@ -28,7 +28,7 @@ export function useApi<T = any>(apiFunction: (...args: any[]) => Promise<ApiResp
       try {
         const response = await apiFunction(...args)
 
-        if (response.success) {
+        if (response.code === 200) {
           setState({
             data: response.data || null,
             loading: false,
@@ -38,7 +38,7 @@ export function useApi<T = any>(apiFunction: (...args: any[]) => Promise<ApiResp
           setState({
             data: null,
             loading: false,
-            error: response.message || "操作失败",
+            error: response.msg || "操作失败",
           })
         }
 
@@ -52,8 +52,8 @@ export function useApi<T = any>(apiFunction: (...args: any[]) => Promise<ApiResp
         })
 
         return {
-          success: false,
-          message: errorMessage,
+          code: 500,
+          msg: errorMessage,
         }
       }
     },

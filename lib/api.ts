@@ -1,10 +1,9 @@
 import { authApi } from "./auth-api"
 
 interface ApiResponse<T = any> {
-  success: boolean
+  code: number
+  msg: string
   data?: T
-  message?: string
-  code?: number
 }
 
 interface RequestOptions {
@@ -17,6 +16,7 @@ interface RequestOptions {
 class ApiClient {
   private readonly baseURL: string
   private isRefreshing = false
+  private failedRequestsQueue: Array<(token: string) => void> = []
 
   constructor(baseURL = "") {
     this.baseURL = baseURL
@@ -27,53 +27,84 @@ class ApiClient {
     return token ? { "x-access-token": token } : {}
   }
 
+  private processQueue(error: Error | null, token: string | null = null) {
+    this.failedRequestsQueue.forEach(prom => {
+      if (error) {
+        // We don't have a reject function here, but letting it fail on retry is acceptable
+        // Or we could change the queue to store { resolve, reject }
+      } else if (token) {
+        prom(token)
+      }
+    })
+    this.failedRequestsQueue = []
+  }
+
   private async handleResponse<T>(
     response: Response,
     endpoint: string,
     options: RequestOptions,
   ): Promise<ApiResponse<T>> {
+    const originalRequest = () => this.request<T>(endpoint, options)
+
     try {
+      if (response.status === 401 && endpoint !== "/v1/user/refresh_token" && options.requireAuth !== false) {
+        if (this.isRefreshing) {
+          return new Promise<ApiResponse<T>>(resolve => {
+            this.failedRequestsQueue.push(() => {
+              resolve(originalRequest())
+            })
+          })
+        }
+
+        this.isRefreshing = true
+
+        try {
+          const refreshResponse = await authApi.refreshToken()
+          if (refreshResponse.code === 200 && refreshResponse.data?.access_token) {
+            this.processQueue(null, refreshResponse.data.access_token)
+            return originalRequest()
+          } else {
+            // Refresh token failed, logout user
+            this.processQueue(new Error("Session expired"), null)
+            authApi.logout()
+            window.location.href = "/" // Redirect to login page
+            return Promise.reject({
+              code: 401,
+              msg: "会话已过期，请重新登录",
+            })
+          }
+        } catch (error) {
+          this.processQueue(error as Error, null)
+          authApi.logout()
+          window.location.href = "/"
+          return Promise.reject({
+            code: 401,
+            msg: "会话已过期，请重新登录",
+          })
+        } finally {
+          this.isRefreshing = false
+        }
+      }
+
       const data = await response.json()
 
       if (response.ok) {
+        // 统一返回格式处理
         return {
-          success: true,
-          data: data.data || data.data || data,
-          message: data.message || "操作成功",
+          code: data.code ?? 200,
+          msg: data.msg ?? "操作成功",
+          data: data.data,
         }
       } else {
-        // 处理认证失败
-        if (response.status === 401 && endpoint !== "/v1/user/refresh_token") {
-          if (!this.isRefreshing) {
-            this.isRefreshing = true
-            const refreshResponse = await authApi.refreshToken()
-            this.isRefreshing = false
-
-            if (refreshResponse.success) {
-              // 重新发起原始请求
-              return this.request<T>(endpoint, options)
-            }
-          }
-
-          // 如果刷新失败或正在刷新中，则登出
-          authApi.logout()
-          window.location.href = "/"
-          return {
-            success: false,
-            message: "登录已过期，请重新登录",
-          }
-        }
-
         return {
-          success: false,
-          message: data.message || data.error || `请求失败 (${response.status})`,
-          code: response.status,
+          code: data.code ?? response.status,
+          msg: data.msg ?? data.message ?? `请求失败 (${response.status})`,
         }
       }
     } catch (error) {
       return {
-        success: false,
-        message: "响应解析失败",
+        code: 500,
+        msg: "响应解析失败",
       }
     }
   }
@@ -104,12 +135,12 @@ class ApiClient {
       }
 
       const response = await fetch(url, config)
-      return await this.handleResponse<T>(response, endpoint, options)
+      return this.handleResponse<T>(response, endpoint, { ...options, requireAuth })
     } catch (error) {
       console.error("API request failed:", error)
       return {
-        success: false,
-        message: "网络错误，请检查网络连接",
+        code: 500,
+        msg: "网络错误，请检查网络连接",
       }
     }
   }

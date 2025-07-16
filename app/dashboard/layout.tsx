@@ -73,7 +73,7 @@ export default function DashboardLayout({
           variant="ghost"
           size="sm"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="text-white hover:bg-gray-800"
+          className="text-white hover:bg-gray-900"
         >
           {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
@@ -81,13 +81,13 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 border-r border-gray-800 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-black border-r border-gray-900 transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center px-6 py-4 border-b border-gray-800">
+          <div className="flex items-center px-6 py-4 border-b border-gray-900">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">K</span>
@@ -111,7 +111,7 @@ export default function DashboardLayout({
                       href={item.href}
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors flex-1 ${
-                        item.active ? "bg-orange-600 text-white" : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                        item.active ? "bg-orange-600 text-white" : "text-gray-300 hover:bg-gray-900 hover:text-white"
                       }`}
                     >
                       <Icon className="mr-3 h-5 w-5" />
@@ -122,7 +122,7 @@ export default function DashboardLayout({
                         variant="ghost"
                         size="sm"
                         onClick={() => isBusinessMenu && setBusinessMenuOpen(!businessMenuOpen)}
-                        className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-800 ml-1"
+                        className="h-8 w-8 p-0 text-gray-400 hover:text-white hover:bg-gray-900 ml-1"
                       >
                         {isBusinessMenu && businessMenuOpen ? (
                           <ChevronDown className="h-4 w-4" />
@@ -146,7 +146,7 @@ export default function DashboardLayout({
                             className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors ${
                               child.active
                                 ? "bg-orange-600/80 text-white"
-                                : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                                : "text-gray-400 hover:bg-gray-900 hover:text-white"
                             }`}
                           >
                             <ChildIcon className="mr-3 h-4 w-4" />
@@ -162,7 +162,7 @@ export default function DashboardLayout({
           </nav>
 
           {/* User info and logout */}
-          <div className="px-4 py-4 border-t border-gray-800">
+          <div className="px-4 py-4 border-t border-gray-900">
             <div className="flex items-center justify-between">
               <div className="text-sm">
                 <div className="text-gray-400">当前用户</div>
@@ -172,7 +172,7 @@ export default function DashboardLayout({
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-gray-400 hover:text-white hover:bg-gray-800"
+                className="text-gray-400 hover:text-white hover:bg-gray-900"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -188,7 +188,7 @@ export default function DashboardLayout({
           <div className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
 
-        <main className="min-h-screen">{children}</main>
+        <main className="min-h-screen bg-black">{children}</main>
       </div>
     </div>
   )

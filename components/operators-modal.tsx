@@ -42,13 +42,47 @@ export function OperatorsModal({ isOpen, onClose, businessId, businessName }: Op
       } else {
         setError(response.message || "获取操作员列表失败")
         // 模拟数据作为后备
-        setOperators([])
+        setOperators([
+          {
+            id: "1",
+            username: "operator1",
+            name: "张三",
+            email: "zhangsan@example.com",
+            createdAt: "2024/01/15 10:30:00",
+            updatedAt: "2024/01/20 14:20:00",
+          },
+          {
+            id: "2",
+            username: "operator2",
+            name: "李四",
+            email: "lisi@example.com",
+            createdAt: "2024/01/10 09:15:00",
+            updatedAt: "2024/01/18 16:45:00",
+          },
+        ])
       }
     } catch (error) {
       console.error("Fetch operators error:", error)
       setError("网络错误，请稍后重试")
       // 模拟数据作为后备
-      setOperators([])
+      setOperators([
+        {
+          id: "1",
+          username: "operator1",
+          name: "张三",
+          email: "zhangsan@example.com",
+          createdAt: "2024/01/15 10:30:00",
+          updatedAt: "2024/01/20 14:20:00",
+        },
+        {
+          id: "2",
+          username: "operator2",
+          name: "李四",
+          email: "lisi@example.com",
+          createdAt: "2024/01/10 09:15:00",
+          updatedAt: "2024/01/18 16:45:00",
+        },
+      ])
     } finally {
       setLoading(false)
     }
@@ -62,7 +96,7 @@ export function OperatorsModal({ isOpen, onClose, businessId, businessName }: Op
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="bg-black border-gray-900 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
             <User className="mr-2 h-5 w-5 text-orange-500" />
@@ -95,7 +129,7 @@ export function OperatorsModal({ isOpen, onClose, businessId, businessName }: Op
 
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                  <TableRow className="border-gray-900 hover:bg-gray-900/50">
                     <TableHead className="text-gray-300">用户名</TableHead>
                     <TableHead className="text-gray-300">姓名</TableHead>
                     <TableHead className="text-gray-300">邮箱</TableHead>
@@ -105,10 +139,10 @@ export function OperatorsModal({ isOpen, onClose, businessId, businessName }: Op
                 </TableHeader>
                 <TableBody>
                   {operators.map((operator) => (
-                    <TableRow key={operator.id} className="border-gray-800 hover:bg-gray-800/50">
+                    <TableRow key={operator.id} className="border-gray-900 hover:bg-gray-900/50">
                       <TableCell className="text-white font-medium">
                         <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                          <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center mr-3">
                             <User className="h-4 w-4 text-gray-400" />
                           </div>
                           {operator.username}

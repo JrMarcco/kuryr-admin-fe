@@ -5,29 +5,58 @@ interface LoginRequest {
   Password: string
 }
 
-interface TokenResponse {
+interface LoginResponse {
   access_token: string
+  refresh_token: string
+}
+
+interface RefreshTokenRequest {
   refresh_token: string
 }
 
 export const authApi = {
   // 登录
-  async login(credentials: LoginRequest): Promise<ApiResponse<TokenResponse>> {
-    const response = await api.post<TokenResponse>("/v1/user/login", credentials, false)
+  async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    const response = await api.post<LoginResponse>("/v1/user/login", credentials, false)
 
-    if (response.success && response.data) {
+    if (response.code === 200 && response.data) {
       // 保存登录信息
       localStorage.setItem("access-token", response.data.access_token)
       localStorage.setItem("refresh-token", response.data.refresh_token)
       localStorage.setItem("username", credentials.Username)
       localStorage.setItem("isLoggedIn", "true")
+
+      return {
+        code: 200,
+        msg: "登录成功",
+        data: response.data,
+      }
     }
 
     return response
   },
 
   // 登出
-  logout(): void {
+  async logout(): Promise<void> {
+    try {
+      // 调用后端登出接口
+      const response = await api.get("/v1/user/logout", true)
+
+      if (response.code === 200) {
+        console.log("服务端登出成功")
+      } else {
+        console.warn("服务端登出失败:", response.msg)
+      }
+    } catch (error) {
+      console.error("调用登出接口失败:", error)
+    } finally {
+      // 无论服务端登出是否成功，都清除本地存储
+      this.clearLocalStorage()
+    }
+  },
+
+  // 清除本地存储
+  clearLocalStorage(): void {
     localStorage.removeItem("access-token")
     localStorage.removeItem("refresh-token")
     localStorage.removeItem("username")
@@ -47,25 +76,32 @@ export const authApi = {
     return username ? { username } : null
   },
 
-  async refreshToken(): Promise<ApiResponse<TokenResponse>> {
+  // 刷新token
+  async refreshToken(): Promise<ApiResponse<LoginResponse>> {
     const refreshToken = localStorage.getItem("refresh-token")
     if (!refreshToken) {
-      return { success: false, message: "No refresh token found" }
+      return {
+        code: 400,
+        msg: "No refresh token found",
+      }
     }
 
-    const response = await api.post<TokenResponse>(
-      "/v1/user/refresh_token",
-      { refresh_token: refreshToken },
-      false,
-    )
+    const response = await api.post<LoginResponse>("/v1/user/refresh_token", { refresh_token: refreshToken }, false)
 
-    if (response.success && response.data) {
+    if (response.code === 200 && response.data) {
+      // 更新本地存储的token
       localStorage.setItem("access-token", response.data.access_token)
       localStorage.setItem("refresh-token", response.data.refresh_token)
       localStorage.setItem("isLoggedIn", "true")
+
+      return {
+        code: 200,
+        msg: "Token刷新成功",
+        data: response.data,
+      }
     } else {
-      // Refresh token failed, logout user
-      this.logout()
+      // Refresh token failed, clear local storage
+      this.clearLocalStorage()
     }
 
     return response

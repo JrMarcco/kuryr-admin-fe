@@ -72,7 +72,7 @@ export default function BusinessManagePage() {
     const offset = (page - 1) * size
     const response = await fetchBusinessList({ offset, limit: size })
 
-    if (response.success && response.data) {
+    if (response.code === 200 && response.data) {
       setBusinesses(response.data.content || [])
       setTotalCount(response.data.total || 0)
     }
@@ -196,7 +196,7 @@ export default function BusinessManagePage() {
   const totalPages = Math.ceil(totalCount / pageSize)
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-black min-h-screen">
       {/* Breadcrumb */}
       <Breadcrumb />
 
@@ -211,7 +211,7 @@ export default function BusinessManagePage() {
             variant="outline"
             onClick={handleRefresh}
             disabled={businessListLoading}
-            className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+            className="border-gray-800 text-gray-300 hover:bg-gray-900 bg-black"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${businessListLoading ? "animate-spin" : ""}`} />
             刷新
@@ -223,7 +223,7 @@ export default function BusinessManagePage() {
                 新增业务方
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-gray-900 border-gray-800 text-white">
+            <DialogContent className="bg-black border-gray-800 text-white">
               <DialogHeader>
                 <DialogTitle className="text-white">{editingBusiness ? "编辑业务方" : "新增业务方"}</DialogTitle>
                 <DialogDescription className="text-gray-400">
@@ -240,7 +240,7 @@ export default function BusinessManagePage() {
                       id="biz_name"
                       value={formData.biz_name}
                       onChange={(e) => setFormData((prev) => ({ ...prev, biz_name: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white"
+                      className="bg-gray-900 border-gray-800 text-white"
                       placeholder="请输入业务名"
                       required
                     />
@@ -253,7 +253,7 @@ export default function BusinessManagePage() {
                       id="biz_key"
                       value={formData.biz_key}
                       onChange={(e) => setFormData((prev) => ({ ...prev, biz_key: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white"
+                      className="bg-gray-900 border-gray-800 text-white"
                       placeholder="请输入业务Key"
                       required
                     />
@@ -266,7 +266,7 @@ export default function BusinessManagePage() {
                       id="biz_secret"
                       value={formData.biz_secret}
                       onChange={(e) => setFormData((prev) => ({ ...prev, biz_secret: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white"
+                      className="bg-gray-900 border-gray-800 text-white"
                       placeholder="请输入业务Secret"
                       required
                     />
@@ -279,7 +279,7 @@ export default function BusinessManagePage() {
                       id="operator"
                       value={formData.operator}
                       onChange={(e) => setFormData((prev) => ({ ...prev, operator: e.target.value }))}
-                      className="bg-gray-800 border-gray-700 text-white"
+                      className="bg-gray-900 border-gray-800 text-white"
                       placeholder="请输入操作员"
                       required
                     />
@@ -290,7 +290,7 @@ export default function BusinessManagePage() {
                     type="button"
                     variant="outline"
                     onClick={resetForm}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+                    className="border-gray-800 text-gray-300 hover:bg-gray-900 bg-black"
                   >
                     取消
                   </Button>
@@ -322,7 +322,7 @@ export default function BusinessManagePage() {
       )}
 
       {/* Table */}
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-black border-gray-900">
         <CardHeader>
           <CardTitle className="text-white">业务方列表</CardTitle>
           <CardDescription className="text-gray-400">管理所有业务方的配置信息</CardDescription>
@@ -340,7 +340,7 @@ export default function BusinessManagePage() {
               <div className="overflow-x-auto">
                 <Table className="min-w-full">
                   <TableHeader>
-                    <TableRow className="border-gray-800 hover:bg-gray-800/50">
+                    <TableRow className="border-gray-900 hover:bg-gray-900/50">
                       <TableHead className="text-gray-300 text-left min-w-[120px]">业务名</TableHead>
                       <TableHead className="text-gray-300 text-left min-w-[140px]">业务Key</TableHead>
                       <TableHead className="text-gray-300 text-left min-w-[180px]">业务Secret</TableHead>
@@ -353,12 +353,12 @@ export default function BusinessManagePage() {
                   </TableHeader>
                   <TableBody>
                     {businesses.map((business) => (
-                      <TableRow key={business.id} className="border-gray-800 hover:bg-gray-800/50">
+                      <TableRow key={business.id} className="border-gray-900 hover:bg-gray-900/50">
                         <TableCell className="text-white font-medium text-left align-top py-4">
                           {business.biz_name}
                         </TableCell>
                         <TableCell className="text-gray-300 text-left align-top py-4">
-                          <Badge variant="secondary" className="bg-gray-800 text-gray-300">
+                          <Badge variant="secondary" className="bg-gray-900 text-gray-300 border-gray-800">
                             {business.biz_key}
                           </Badge>
                         </TableCell>
@@ -388,7 +388,7 @@ export default function BusinessManagePage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleViewOperators(business)}
-                            className="text-orange-400 hover:text-orange-300 hover:bg-gray-800 whitespace-nowrap"
+                            className="text-orange-400 hover:text-orange-300 hover:bg-gray-900 whitespace-nowrap"
                           >
                             <Users className="h-4 w-4 mr-1" />
                             查看操作员
@@ -399,7 +399,7 @@ export default function BusinessManagePage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleConfigManage(business)}
-                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-800 whitespace-nowrap"
+                            className="text-blue-400 hover:text-blue-300 hover:bg-gray-900 whitespace-nowrap"
                           >
                             <Settings className="h-4 w-4 mr-1" />
                             查看配置

@@ -17,14 +17,14 @@ interface PaginationProps {
 }
 
 export function Pagination({
-                             currentPage,
-                             totalPages,
-                             pageSize,
-                             totalItems,
-                             onPageChange,
-                             onPageSizeChange,
-                             loading = false,
-                           }: PaginationProps) {
+  currentPage,
+  totalPages,
+  pageSize,
+  totalItems,
+  onPageChange,
+  onPageSizeChange,
+  loading = false,
+}: PaginationProps) {
   const startItem = (currentPage - 1) * pageSize + 1
   const endItem = Math.min(currentPage * pageSize, totalItems)
 
@@ -55,7 +55,7 @@ export function Pagination({
             value={pageSize.toString()}
             onChange={handlePageSizeChange}
             disabled={loading}
-            className="h-8 w-16 bg-gray-800 border border-gray-700 text-white rounded text-sm px-2 focus:border-orange-500 focus:outline-none"
+            className="h-8 w-16 bg-black border border-gray-900 text-white rounded text-sm px-2 focus:border-orange-500 focus:outline-none"
           >
             <option value="10">10</option>
             <option value="20">20</option>
@@ -71,7 +71,7 @@ export function Pagination({
             size="sm"
             onClick={() => handlePageChange(1)}
             disabled={currentPage === 1 || loading}
-            className="h-8 w-8 p-0 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+            className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
@@ -80,7 +80,7 @@ export function Pagination({
             size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1 || loading}
-            className="h-8 w-8 p-0 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+            className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -98,7 +98,7 @@ export function Pagination({
             size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages || loading}
-            className="h-8 w-8 p-0 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+            className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -107,7 +107,7 @@ export function Pagination({
             size="sm"
             onClick={() => handlePageChange(totalPages)}
             disabled={currentPage === totalPages || loading}
-            className="h-8 w-8 p-0 border-gray-700 text-gray-300 hover:bg-gray-800 bg-transparent"
+            className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>

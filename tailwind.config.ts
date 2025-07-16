@@ -30,27 +30,27 @@ const config: Config = {
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#111827", // gray-900
+          foreground: "#f3f4f6", // gray-100
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "#1f2937", // gray-800
+          DEFAULT: "#0f0f0f", // 更深的黑色
           foreground: "#9ca3af", // gray-400
         },
         accent: {
-          DEFAULT: "#374151", // gray-700
+          DEFAULT: "#1a1a1a", // 深黑色
           foreground: "#f3f4f6", // gray-100
         },
         popover: {
-          DEFAULT: "#111827", // gray-900
+          DEFAULT: "#000000", // 纯黑色
           foreground: "#f9fafb", // gray-50
         },
         card: {
-          DEFAULT: "#111827", // gray-900
+          DEFAULT: "#000000", // 纯黑色
           foreground: "#f9fafb", // gray-50
         },
       },

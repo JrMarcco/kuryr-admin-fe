@@ -12,7 +12,7 @@ export default function ConfigManagePage() {
   const businessName = searchParams.get("name")
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-black min-h-screen">
       {/* Breadcrumb */}
       <Breadcrumb items={[{ label: "业务方管理", href: "/dashboard/business" }, { label: "配置管理" }]} />
 
@@ -28,7 +28,7 @@ export default function ConfigManagePage() {
       </div>
 
       {/* Business Info Card */}
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-black border-gray-900">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <Settings className="mr-2 h-5 w-5 text-orange-500" />
@@ -38,21 +38,22 @@ export default function ConfigManagePage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center space-x-4">
-              <span className="text-gray-400 font-medium whitespace-nowrap min-w-[100px]">业务方名称:</span>
-              <span className="text-white font-medium whitespace-nowrap">{businessName || "未知业务方"}</span>
-            </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-400 font-medium whitespace-nowrap min-w-[100px]">业务方ID:</span>
-              <Badge variant="secondary" className="bg-gray-800 text-gray-300 whitespace-nowrap">
+              <Badge variant="secondary" className="bg-gray-900 text-gray-300 border-gray-800 whitespace-nowrap">
                 {businessId || "未知"}
               </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-400 font-medium whitespace-nowrap min-w-[100px]">业务方名称:</span>
+              <span className="text-white font-medium whitespace-nowrap">{businessName || "未知业务方"}</span>
             </div>
           </div>
         </CardContent>
       </Card>
+
       {/* Configuration Placeholder */}
-      <Card className="bg-gray-900 border-gray-800">
+      <Card className="bg-black border-gray-900">
         <CardHeader>
           <CardTitle className="text-white">配置项</CardTitle>
           <CardDescription className="text-gray-400">业务方的详细配置设置</CardDescription>
