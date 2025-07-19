@@ -5,13 +5,30 @@ interface LoginRequest {
   Password: string
 }
 
+interface PasswordLoginRequest {
+  account: string
+  password: string
+  type: "phone" | "email"
+}
+
+interface CodeLoginRequest {
+  account: string
+  code: string
+  type: "phone" | "email"
+}
+
+interface SendCodeRequest {
+  account: string
+  type: "phone" | "email"
+}
+
 interface LoginResponse {
   access_token: string
   refresh_token: string
 }
 
 export const authApi = {
-  // 登录
+  // 原有的用户名密码登录（保持兼容性）
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await api.post<LoginResponse>("/v1/user/login", credentials, false)
 
@@ -28,6 +45,78 @@ export const authApi = {
         data: response.data,
       }
     }
+
+    return response
+  },
+
+  // 密码登录
+  async loginWithPassword(credentials: PasswordLoginRequest): Promise<ApiResponse<LoginResponse>> {
+    const response = await api.post<LoginResponse>(
+      "/v1/user/login/password",
+      {
+        account: credentials.account,
+        password: credentials.password,
+        account_type: credentials.type,
+      },
+      false,
+    )
+
+    if (response.code === 200 && response.data) {
+      // 保存登录信息
+      localStorage.setItem("access-token", response.data.access_token)
+      localStorage.setItem("refresh-token", response.data.refresh_token)
+      localStorage.setItem("username", credentials.account)
+      localStorage.setItem("isLoggedIn", "true")
+
+      return {
+        code: 200,
+        msg: "登录成功",
+        data: response.data,
+      }
+    }
+
+    return response
+  },
+
+  // 验证码登录
+  async loginWithCode(credentials: CodeLoginRequest): Promise<ApiResponse<LoginResponse>> {
+    const response = await api.post<LoginResponse>(
+      "/v1/user/login/code",
+      {
+        account: credentials.account,
+        verification_code: credentials.code,
+        account_type: credentials.type,
+      },
+      false,
+    )
+
+    if (response.code === 200 && response.data) {
+      // 保存登录信息
+      localStorage.setItem("access-token", response.data.access_token)
+      localStorage.setItem("refresh-token", response.data.refresh_token)
+      localStorage.setItem("username", credentials.account)
+      localStorage.setItem("isLoggedIn", "true")
+
+      return {
+        code: 200,
+        msg: "登录成功",
+        data: response.data,
+      }
+    }
+
+    return response
+  },
+
+  // 发送验证码
+  async sendVerificationCode(request: SendCodeRequest): Promise<ApiResponse<null>> {
+    const response = await api.post<null>(
+      "/v1/user/send_code",
+      {
+        account: request.account,
+        account_type: request.type,
+      },
+      false,
+    )
 
     return response
   },
