@@ -194,11 +194,6 @@ export default function BusinessManagePage() {
     }))
   }
 
-  const maskSecret = (secret: string) => {
-    if (!secret) return ""
-    return secret.substring(0, 8) + "*".repeat(Math.max(0, secret.length - 8))
-  }
-
   const handleViewOperators = (business: Business) => {
     setOperatorsModal({
       isOpen: true,
@@ -419,16 +414,8 @@ export default function BusinessManagePage() {
                         <TableCell className="text-gray-300 text-left align-top py-4">
                           <div className="flex items-center space-x-2">
                             <span className="font-mono text-sm">
-                              {showSecrets[business.id] ? business.biz_secret : maskSecret(business.biz_secret)}
+                              {business.biz_secret}
                             </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleSecretVisibility(business.id)}
-                              className="h-6 w-6 p-0 text-gray-400 hover:text-white flex-shrink-0"
-                            >
-                              {showSecrets[business.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                            </Button>
                           </div>
                         </TableCell>
                         <TableCell className="text-gray-300 text-sm text-left align-top py-4 whitespace-nowrap">
