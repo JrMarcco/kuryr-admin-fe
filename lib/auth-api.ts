@@ -10,10 +10,6 @@ interface LoginResponse {
   refresh_token: string
 }
 
-interface RefreshTokenRequest {
-  refresh_token: string
-}
-
 export const authApi = {
   // 登录
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
