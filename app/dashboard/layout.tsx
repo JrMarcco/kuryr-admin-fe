@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -79,6 +79,14 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>(["业务方管理"])
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [username, setUsername] = useState<string>("Admin") // 添加用户名状态
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username")
+    if (storedUsername) {
+      setUsername(storedUsername)
+    }
+  }, [])
 
   // 检查当前路径是否激活
   const isActive = (href: string) => {
@@ -168,6 +176,10 @@ export default function DashboardLayout({
     )
   }
 
+  const getUserInitial = (name: string) => {
+    return name.charAt(0).toUpperCase()
+  }
+
   return (
     <div className="flex h-screen bg-black">
       {/* 侧边栏 */}
@@ -209,10 +221,10 @@ export default function DashboardLayout({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">A</span>
+                      <span className="text-white text-sm font-medium">{getUserInitial(username)}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">Admin</p>
+                      <p className="text-sm font-medium text-white" title={username}>{username}</p>
                       <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
                         管理员
                       </Badge>
