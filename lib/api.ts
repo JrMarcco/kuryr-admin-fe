@@ -75,7 +75,7 @@ class ApiClient {
           }
         } catch (error) {
           this.processQueue(error as Error, null)
-          authApi.logout()
+          await authApi.logout()
           window.location.href = "/"
           return Promise.reject({
             code: 401,

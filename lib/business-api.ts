@@ -14,6 +14,8 @@ interface Business {
   biz_name: string
   biz_key: string
   biz_secret: string
+  contact: string
+  contact_email: string
   created_at: number
   updated_at: number
 }
@@ -31,8 +33,8 @@ interface BusinessListRequest {
 interface CreateBusinessRequest {
   biz_name: string
   biz_key: string
-  biz_secret: string
-  operator: string
+  contact: string
+  contact_email: string
 }
 
 interface UpdateBusinessRequest extends CreateBusinessRequest {

@@ -1,3 +1,4 @@
+
 "use client"
 
 import type React from "react"
@@ -33,6 +34,8 @@ interface Business {
   biz_name: string
   biz_key: string
   biz_secret: string
+  contact: string
+  contact_email: string
   created_at: number
   updated_at: number
 }
@@ -49,8 +52,8 @@ export default function BusinessManagePage() {
   const [formData, setFormData] = useState({
     biz_name: "",
     biz_key: "",
-    biz_secret: "",
-    operator: "",
+    contact: "",
+    contact_email: "",
   })
 
   const [operatorsModal, setOperatorsModal] = useState({
@@ -59,6 +62,9 @@ export default function BusinessManagePage() {
     businessName: "",
   })
 
+  // 表单提交状态
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   // 使用 useApi hook 管理API调用状态
   const {
     data: businessListData,
@@ -66,6 +72,13 @@ export default function BusinessManagePage() {
     error: businessListError,
     execute: fetchBusinessList,
   } = useApi(businessApi.getBusinessList)
+
+  // 创建业务方的 API hook
+  const {
+    loading: createLoading,
+    error: createError,
+    execute: executeCreate,
+  } = useApi(businessApi.createBusiness)
 
   // 加载业务方列表
   const loadBusinessList = async (page = currentPage, size = pageSize) => {
@@ -100,40 +113,54 @@ export default function BusinessManagePage() {
     loadBusinessList()
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const now = Date.now()
+    setIsSubmitting(true)
 
-    if (editingBusiness) {
-      // 编辑
-      setBusinesses((prev) =>
-        prev.map((business) =>
-          business.id === editingBusiness.id
-            ? {
+    try {
+      if (editingBusiness) {
+        // 编辑逻辑暂时保持原样
+        const now = Date.now()
+        setBusinesses((prev) =>
+          prev.map((business) =>
+            business.id === editingBusiness.id
+              ? {
                 ...business,
                 biz_name: formData.biz_name,
                 biz_key: formData.biz_key,
-                biz_secret: formData.biz_secret,
+                biz_secret: "",
                 updated_at: now,
               }
-            : business,
-        ),
-      )
-    } else {
-      // 新增
-      const newBusiness: Business = {
-        id: Date.now().toString(),
-        biz_name: formData.biz_name,
-        biz_key: formData.biz_key,
-        biz_secret: formData.biz_secret,
-        created_at: now,
-        updated_at: now,
-      }
-      setBusinesses((prev) => [newBusiness, ...prev])
-      setTotalCount((prev) => prev + 1)
-    }
+              : business,
+          ),
+        )
+      } else {
+        // 新增业务方 - 调用API
+        const response = await executeCreate({
+          biz_name: formData.biz_name,
+          biz_key: formData.biz_key,
+          contact: formData.contact,
+          contact_email: formData.contact_email,
+        })
 
-    resetForm()
+        if (response.code === 200 && response.data) {
+          // 创建成功后重新加载列表
+          await loadBusinessList(1, pageSize)
+          setCurrentPage(1) // 回到第一页显示新创建的数据
+          resetForm()
+        } else {
+          // API 返回错误，不关闭弹窗
+          console.error('创建业务方失败:', response.msg)
+          return
+        }
+      }
+
+      resetForm()
+    } catch (error) {
+      console.error('操作失败:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleEdit = (business: Business) => {
@@ -141,8 +168,8 @@ export default function BusinessManagePage() {
     setFormData({
       biz_name: business.biz_name,
       biz_key: business.biz_key,
-      biz_secret: business.biz_secret,
-      operator: "",
+      contact: business.contact,
+      contact_email: business.contact_email,
     })
     setIsDialogOpen(true)
   }
@@ -155,7 +182,7 @@ export default function BusinessManagePage() {
   }
 
   const resetForm = () => {
-    setFormData({ biz_name: "", biz_key: "", biz_secret: "", operator: "" })
+    setFormData({ biz_name: "", biz_key: "", contact: "", contact_email: "" })
     setEditingBusiness(null)
     setIsDialogOpen(false)
   }
@@ -243,6 +270,7 @@ export default function BusinessManagePage() {
                       className="bg-gray-900 border-gray-800 text-white"
                       placeholder="请输入业务名"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -256,46 +284,72 @@ export default function BusinessManagePage() {
                       className="bg-gray-900 border-gray-800 text-white"
                       placeholder="请输入业务Key"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="biz_secret" className="text-gray-300">
-                      业务Secret
+                    <Label htmlFor="contact" className="text-gray-300">
+                      联系人
                     </Label>
                     <Input
-                      id="biz_secret"
-                      value={formData.biz_secret}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, biz_secret: e.target.value }))}
+                      id="contact"
+                      value={formData.contact}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, contact: e.target.value }))}
                       className="bg-gray-900 border-gray-800 text-white"
-                      placeholder="请输入业务Secret"
+                      placeholder="请输入联系人"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="operator" className="text-gray-300">
-                      操作员
+                    <Label htmlFor="contact_email" className="text-gray-300">
+                      联系人邮箱
                     </Label>
                     <Input
-                      id="operator"
-                      value={formData.operator}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, operator: e.target.value }))}
+                      id="contact_email"
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, contact_email: e.target.value }))}
                       className="bg-gray-900 border-gray-800 text-white"
-                      placeholder="请输入操作员"
+                      placeholder="请输入联系人邮箱"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
+
+                {/* 显示创建错误 */}
+                {createError && !editingBusiness && (
+                  <Alert className="bg-red-900/50 border-red-800 mb-4">
+                    <AlertDescription className="text-red-300">
+                      创建失败: {createError}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <DialogFooter>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={resetForm}
+                    disabled={isSubmitting}
                     className="border-gray-800 text-gray-300 hover:bg-gray-900 bg-black"
                   >
                     取消
                   </Button>
-                  <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white">
-                    {editingBusiness ? "更新" : "创建"}
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {editingBusiness ? "更新中..." : "创建中..."}
+                      </>
+                    ) : (
+                      editingBusiness ? "更新" : "创建"
+                    )}
                   </Button>
                 </DialogFooter>
               </form>

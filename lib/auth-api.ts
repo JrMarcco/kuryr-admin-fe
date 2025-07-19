@@ -28,10 +28,10 @@ export const authApi = {
     const response = await api.post<LoginResponse>(
       "/v1/user/login",
       {
-        VerifyType: "passwd",
-        AccountType: credentials.type,
-        Account: credentials.account,
-        Credential: credentials.password,
+        account: credentials.account,
+        account_type: credentials.type,
+        credential: credentials.password,
+        verify_type: "passwd",
       },
       false,
     )
@@ -59,10 +59,10 @@ export const authApi = {
     const response = await api.post<LoginResponse>(
       "/v1/user/login",
       {
-        VerifyType: "code",
-        AccountType: credentials.type,
-        Account: credentials.account,
-        Credential: credentials.code,
+        account: credentials.account,
+        account_type: credentials.type,
+        credential: credentials.code,
+        verify_type: "code",
       },
       false,
     )
