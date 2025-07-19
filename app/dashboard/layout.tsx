@@ -106,15 +106,7 @@ export default function DashboardLayout({
 
     try {
       // 调用登出API
-      const response = await authApi.logout()
-
-      if (response.code === 200) {
-        console.log("登出成功")
-      } else {
-        console.warn("登出API调用失败:", response.msg)
-      }
-    } catch (error) {
-      console.error("登出过程中发生错误:", error)
+      await authApi.logout();
     } finally {
       // 无论API调用是否成功，都执行本地清理
       localStorage.removeItem("access-token")
@@ -210,7 +202,7 @@ export default function DashboardLayout({
             {sidebarItems.map((item) => renderSidebarItem(item))}
           </nav>
 
-          {/* User info - stays at bottom */}
+          {/* User info - stays at the bottom */}
           <div className="border-t border-gray-900 p-4">
             <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-3">

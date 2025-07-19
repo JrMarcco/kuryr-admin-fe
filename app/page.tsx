@@ -13,14 +13,14 @@ import { MessageSquare, Mail, Phone } from "lucide-react"
 import { authApi } from "@/lib/auth-api"
 
 type LoginMethod = "password" | "code"
-type AccountType = "phone" | "email"
+type AccountType = "mobile" | "email"
 
 export default function LoginPage() {
   const [account, setAccount] = useState("")
   const [password, setPassword] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("password")
-  const [accountType, setAccountType] = useState<AccountType>("phone")
+  const [accountType, setAccountType] = useState<AccountType>("mobile")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [sendingCode, setSendingCode] = useState(false)
@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   // 倒计时效果
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: number
     if (countdown > 0) {
       timer = setTimeout(() => setCountdown(countdown - 1), 1000)
     }
@@ -43,7 +43,7 @@ export default function LoginPage() {
     if (value.includes("@")) {
       setAccountType("email")
     } else if (/^\d+$/.test(value)) {
-      setAccountType("phone")
+      setAccountType("mobile")
     }
   }
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
       return
     }
 
-    if (accountType === "phone" && !/^1[3-9]\d{9}$/.test(account)) {
+    if (accountType === "mobile" && !/^1[3-9]\d{9}$/.test(account)) {
       setError("请输入正确的手机号格式")
       return
     }

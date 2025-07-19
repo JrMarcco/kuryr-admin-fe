@@ -1,25 +1,20 @@
-import { api, type ApiResponse } from "./api"
-
-interface LoginRequest {
-  Username: string
-  Password: string
-}
+import {api, type ApiResponse} from "./api"
 
 interface PasswordLoginRequest {
   account: string
   password: string
-  type: "phone" | "email"
+  type: "mobile" | "email"
 }
 
 interface CodeLoginRequest {
   account: string
   code: string
-  type: "phone" | "email"
+  type: "mobile" | "email"
 }
 
 interface SendCodeRequest {
   account: string
-  type: "phone" | "email"
+  type: "mobile" | "email"
 }
 
 interface LoginResponse {
@@ -28,40 +23,20 @@ interface LoginResponse {
 }
 
 export const authApi = {
-  // 原有的用户名密码登录（保持兼容性）
-  async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    const response = await api.post<LoginResponse>("/v1/user/login", credentials, false)
-
-    if (response.code === 200 && response.data) {
-      // 保存登录信息
-      localStorage.setItem("access-token", response.data.access_token)
-      localStorage.setItem("refresh-token", response.data.refresh_token)
-      localStorage.setItem("username", credentials.Username)
-      localStorage.setItem("isLoggedIn", "true")
-
-      return {
-        code: 200,
-        msg: "登录成功",
-        data: response.data,
-      }
-    }
-
-    return response
-  },
-
   // 密码登录
   async loginWithPassword(credentials: PasswordLoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await api.post<LoginResponse>(
       "/v1/user/login",
       {
-        Username: credentials.account,
-        Password: credentials.password,
-        verify_type: "passwd",
-        account_type: credentials.type,
+        VerifyType: "passwd",
+        AccountType: credentials.type,
+        Account: credentials.account,
+        Certificate: credentials.password,
       },
       false,
     )
 
+    // noinspection DuplicatedCode
     if (response.code === 200 && response.data) {
       // 保存登录信息
       localStorage.setItem("access-token", response.data.access_token)
@@ -84,14 +59,15 @@ export const authApi = {
     const response = await api.post<LoginResponse>(
       "/v1/user/login",
       {
-        Username: credentials.account,
-        verification_code: credentials.code,
-        verify_type: "code",
-        account_type: credentials.type,
+        Account: credentials.account,
+        Certificate: credentials.code,
+        VerifyType: "code",
+        AccountType: credentials.type,
       },
       false,
     )
 
+    // noinspection DuplicatedCode
     if (response.code === 200 && response.data) {
       // 保存登录信息
       localStorage.setItem("access-token", response.data.access_token)
@@ -111,28 +87,36 @@ export const authApi = {
 
   // 发送验证码
   async sendVerificationCode(request: SendCodeRequest): Promise<ApiResponse<null>> {
-    const response = await api.post<null>(
+    return await api.post<null>(
       "/v1/user/send_code",
       {
-        account: request.account,
-        account_type: request.type,
+        Account: request.account,
+        AccountType: request.type,
       },
       false,
     )
-
-    return response
   },
 
   // 登出
   async logout(): Promise<void> {
     try {
-      // 调用后端登出接口
-      const response = await api.get("/v1/user/logout", true)
+      // 获取当前的 access token
+      const accessToken = localStorage.getItem("access-token")
 
-      if (response.code === 200) {
-        console.log("服务端登出成功")
+      if (accessToken) {
+        const response = await api.request("/v1/user/logout", {
+          method: "GET",
+          requireAuth: true,
+          headers: { "x-access-token": accessToken }
+        })
+
+        if (response.code === 200) {
+          console.log("服务端登出成功")
+        } else {
+          console.warn("服务端登出失败:", response.msg)
+        }
       } else {
-        console.warn("服务端登出失败:", response.msg)
+        console.warn("未找到 access token，跳过服务端登出")
       }
     } catch (error) {
       console.error("调用登出接口失败:", error)
@@ -155,12 +139,6 @@ export const authApi = {
     const token = localStorage.getItem("access-token")
     const isLoggedIn = localStorage.getItem("isLoggedIn")
     return !!(token && isLoggedIn === "true")
-  },
-
-  // 获取当前用户信息
-  getCurrentUser(): { username: string } | null {
-    const username = localStorage.getItem("username")
-    return username ? { username } : null
   },
 
   // 刷新token
