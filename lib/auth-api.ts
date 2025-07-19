@@ -52,10 +52,11 @@ export const authApi = {
   // 密码登录
   async loginWithPassword(credentials: PasswordLoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await api.post<LoginResponse>(
-      "/v1/user/login/password",
+      "/v1/user/login",
       {
-        account: credentials.account,
-        password: credentials.password,
+        Username: credentials.account,
+        Password: credentials.password,
+        verify_type: "passwd",
         account_type: credentials.type,
       },
       false,
@@ -81,10 +82,11 @@ export const authApi = {
   // 验证码登录
   async loginWithCode(credentials: CodeLoginRequest): Promise<ApiResponse<LoginResponse>> {
     const response = await api.post<LoginResponse>(
-      "/v1/user/login/code",
+      "/v1/user/login",
       {
-        account: credentials.account,
+        Username: credentials.account,
         verification_code: credentials.code,
+        verify_type: "code",
         account_type: credentials.type,
       },
       false,
