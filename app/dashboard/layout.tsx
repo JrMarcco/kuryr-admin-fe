@@ -225,9 +225,6 @@ export default function DashboardLayout({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white" title={username}>{username}</p>
-                      <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
-                        管理员
-                      </Badge>
                     </div>
                   </div>
                   <Button

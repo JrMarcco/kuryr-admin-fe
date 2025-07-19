@@ -31,7 +31,7 @@ export const authApi = {
         VerifyType: "passwd",
         AccountType: credentials.type,
         Account: credentials.account,
-        Certificate: credentials.password,
+        Credential: credentials.password,
       },
       false,
     )
@@ -59,10 +59,10 @@ export const authApi = {
     const response = await api.post<LoginResponse>(
       "/v1/user/login",
       {
-        Account: credentials.account,
-        Certificate: credentials.code,
         VerifyType: "code",
         AccountType: credentials.type,
+        Account: credentials.account,
+        Credential: credentials.code,
       },
       false,
     )
@@ -72,7 +72,6 @@ export const authApi = {
       // 保存登录信息
       localStorage.setItem("access-token", response.data.access_token)
       localStorage.setItem("refresh-token", response.data.refresh_token)
-      localStorage.setItem("username", credentials.account)
       localStorage.setItem("isLoggedIn", "true")
 
       return {
