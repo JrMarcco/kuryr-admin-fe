@@ -6,8 +6,14 @@ interface RetryPolicyConfig {
   max_retry_times: number // 最大重试次数
 }
 
+interface ChannelItem {
+  channel: "sms" | "email" // 渠道类型
+  priority: number // 优先级 1-9
+  enabled: boolean // 是否启用
+}
+
 interface ChannelConfig {
-  channels: string[] // 渠道项
+  channels: ChannelItem[] // 渠道项数组
   retry_policy_config: RetryPolicyConfig // 重试策略配置
 }
 
@@ -119,6 +125,7 @@ export type {
   GetConfigRequest,
   RetryPolicyConfig,
   ChannelConfig,
+  ChannelItem,
   QuotaConfig,
   CallbackConfig,
 }
