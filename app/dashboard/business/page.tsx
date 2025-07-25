@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -114,17 +115,13 @@ export default function BusinessPage() {
                       {businesses.map((business) => (
                         <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
                           <td className="py-3 px-4 text-white">{business.biz_name}</td>
-                          <td className="py-3 px-4 text-gray-300">{business.biz_id}</td>
+                          <td className="py-3 px-4 text-gray-300">{business.id}</td>
                           <td className="py-3 px-4">
                             <Badge
-                              variant={business.status === "active" ? "default" : "secondary"}
-                              className={
-                                business.status === "active"
-                                  ? "bg-green-600/20 text-green-400 border-green-600/30"
-                                  : "bg-gray-600/20 text-gray-400 border-gray-600/30"
-                              }
+                              variant="default"
+                              className="bg-green-600/20 text-green-400 border-green-600/30"
                             >
-                              {business.status === "active" ? "活跃" : "非活跃"}
+                              活跃
                             </Badge>
                           </td>
                           <td className="py-3 px-4 text-gray-300">{formatTimestamp(business.created_at)}</td>
@@ -159,7 +156,17 @@ export default function BusinessPage() {
 
                 {totalPages > 1 && (
                   <div className="mt-6">
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                    <Pagination 
+                      currentPage={currentPage} 
+                      totalPages={totalPages} 
+                      pageSize={pageSize}
+                      totalItems={totalCount}
+                      onPageChange={handlePageChange}
+                      onPageSizeChange={(newPageSize) => {
+                        // Handle page size change if needed
+                        console.log('Page size changed to:', newPageSize)
+                      }}
+                    />
                   </div>
                 )}
               </>
@@ -176,7 +183,7 @@ export default function BusinessPage() {
             setIsOperatorsModalOpen(false)
             setSelectedBusiness(null)
           }}
-          businessId={selectedBusiness.biz_id}
+          businessId={selectedBusiness.id}
           businessName={selectedBusiness.biz_name}
         />
       )}
@@ -189,7 +196,7 @@ export default function BusinessPage() {
             setIsConfigModalOpen(false)
             setSelectedBusiness(null)
           }}
-          businessId={selectedBusiness.biz_id}
+          businessId={selectedBusiness.id}
           businessName={selectedBusiness.biz_name}
         />
       )}

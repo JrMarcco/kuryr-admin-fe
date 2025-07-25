@@ -9,7 +9,7 @@ interface Operator {
   updatedAt: string
 }
 
-interface Business {
+export interface Business {
   id: string
   biz_name: string
   biz_key: string

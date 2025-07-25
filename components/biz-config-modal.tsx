@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,6 +25,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   const [config, setConfig] = useState<BizConfig | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [hasData, setHasData] = useState(false)
+  const fetchedRef = useRef<string | null>(null) // 记录已经获取过配置的 businessId
   const [formData, setFormData] = useState<CreateConfigRequest>({
     biz_id: businessId,
     rate_limit: 100,
@@ -120,17 +122,25 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
 
   useEffect(() => {
     if (isOpen && businessId) {
-      fetchConfig() // 打开模态框时立即调用API获取配置
-      setIsEditing(false)
-      // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
+      // 只有当是新的 businessId 或首次打开时才调用接口
+      if (fetchedRef.current !== businessId) {
+        console.log("调用接口获取配置")
+        fetchedRef.current = businessId // 记录当前已获取的 businessId
+        fetchConfig() // 打开模态框时立即调用API获取配置
+        setIsEditing(false)
+        // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
+      }
+    } else if (!isOpen) {
+      // 模态框关闭时重置，以便下次打开时能重新获取数据
+      fetchedRef.current = null
     }
   }, [isOpen, businessId])
 
   const handleSave = async () => {
     const response = await executeSaveConfig(formData)
 
-    if (response.code === 200) {
-      setConfig(response.data)
+    if (response.code === 200 && response.data) {
+      setConfig(response.data )
       setHasData(true)
       setIsEditing(false)
       // 可以添加成功提示
