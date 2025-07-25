@@ -73,7 +73,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
 
     if (response.code === 200 && response.data) {
       setConfig(response.data)
-      setHasData(true)
+      setHasData(true) // 有数据时设置为true，显示表格
       setFormData({
         biz_id: businessId,
         rate_limit: response.data.rate_limit,
@@ -84,7 +84,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
     } else {
       // 如果没有配置，不显示表格
       setConfig(null)
-      setHasData(false)
+      setHasData(false) // 无数据时设置为false，显示空状态
       setFormData({
         biz_id: businessId,
         rate_limit: 100,
@@ -120,9 +120,9 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
 
   useEffect(() => {
     if (isOpen && businessId) {
-      fetchConfig()
+      fetchConfig() // 打开模态框时立即调用API获取配置
       setIsEditing(false)
-      setHasData(false)
+      // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
     }
   }, [isOpen, businessId])
 
