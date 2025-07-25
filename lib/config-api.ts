@@ -49,7 +49,7 @@ export const configApi = {
 
   // 创建配置
   async createConfig(config: CreateConfigRequest): Promise<ApiResponse<BizConfig>> {
-    return api.post<BizConfig>("/v1/biz_conf/create", config)
+    return api.post<BizConfig>("/v1/biz_conf/save", config)
   },
 
   // 更新配置

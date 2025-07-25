@@ -49,7 +49,7 @@ export const businessApi = {
 
   // 创建业务方
   async createBusiness(business: CreateBusinessRequest): Promise<ApiResponse<Business>> {
-    return api.post<Business>("/v1/biz/create", business)
+    return api.post<Business>("/v1/biz/save", business)
   },
 
   // 更新业务方
