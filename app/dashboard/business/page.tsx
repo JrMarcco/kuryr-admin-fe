@@ -1,4 +1,3 @@
-
 "use client"
 
 import type React from "react"
@@ -21,8 +20,9 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Plus, Edit, Trash2, Eye, EyeOff, Users, Loader2, RefreshCw, Settings } from "lucide-react"
+import { Plus, Edit, Trash2, Users, Loader2, RefreshCw, Settings } from "lucide-react"
 import { OperatorsModal } from "@/components/operators-modal"
+import { BizConfigModal } from "@/components/biz-config-modal"
 import { Pagination } from "@/components/pagination"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { businessApi } from "@/lib/business-api"
@@ -62,6 +62,12 @@ export default function BusinessManagePage() {
     businessName: "",
   })
 
+  const [configModal, setConfigModal] = useState({
+    isOpen: false,
+    businessId: "",
+    businessName: "",
+  })
+
   // 表单提交状态
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -74,11 +80,7 @@ export default function BusinessManagePage() {
   } = useApi(businessApi.getBusinessList)
 
   // 创建业务方的 API hook
-  const {
-    loading: createLoading,
-    error: createError,
-    execute: executeCreate,
-  } = useApi(businessApi.createBusiness)
+  const { loading: createLoading, error: createError, execute: executeCreate } = useApi(businessApi.createBusiness)
 
   // 加载业务方列表
   const loadBusinessList = async (page = currentPage, size = pageSize) => {
@@ -125,12 +127,12 @@ export default function BusinessManagePage() {
           prev.map((business) =>
             business.id === editingBusiness.id
               ? {
-                ...business,
-                biz_name: formData.biz_name,
-                biz_key: formData.biz_key,
-                biz_secret: "",
-                updated_at: now,
-              }
+                  ...business,
+                  biz_name: formData.biz_name,
+                  biz_key: formData.biz_key,
+                  biz_secret: "",
+                  updated_at: now,
+                }
               : business,
           ),
         )
@@ -150,14 +152,14 @@ export default function BusinessManagePage() {
           resetForm()
         } else {
           // API 返回错误，不关闭弹窗
-          console.error('创建业务方失败:', response.msg)
+          console.error("创建业务方失败:", response.msg)
           return
         }
       }
 
       resetForm()
     } catch (error) {
-      console.error('操作失败:', error)
+      console.error("操作失败:", error)
     } finally {
       setIsSubmitting(false)
     }
@@ -211,8 +213,19 @@ export default function BusinessManagePage() {
   }
 
   const handleConfigManage = (business: Business) => {
-    // 跳转到配置管理页面，传递业务方信息
-    router.push(`/dashboard/business/config?id=${business.id}&name=${encodeURIComponent(business.biz_name)}`)
+    setConfigModal({
+      isOpen: true,
+      businessId: business.id,
+      businessName: business.biz_name,
+    })
+  }
+
+  const closeConfigModal = () => {
+    setConfigModal({
+      isOpen: false,
+      businessId: "",
+      businessName: "",
+    })
   }
 
   const totalPages = Math.ceil(totalCount / pageSize)
@@ -316,9 +329,7 @@ export default function BusinessManagePage() {
                 {/* 显示创建错误 */}
                 {createError && !editingBusiness && (
                   <Alert className="bg-red-900/50 border-red-800 mb-4">
-                    <AlertDescription className="text-red-300">
-                      创建失败: {createError}
-                    </AlertDescription>
+                    <AlertDescription className="text-red-300">创建失败: {createError}</AlertDescription>
                   </Alert>
                 )}
 
@@ -342,8 +353,10 @@ export default function BusinessManagePage() {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         {editingBusiness ? "更新中..." : "创建中..."}
                       </>
+                    ) : editingBusiness ? (
+                      "更新"
                     ) : (
-                      editingBusiness ? "更新" : "创建"
+                      "创建"
                     )}
                   </Button>
                 </DialogFooter>
@@ -413,9 +426,7 @@ export default function BusinessManagePage() {
                         </TableCell>
                         <TableCell className="text-gray-300 text-left align-top py-4">
                           <div className="flex items-center space-x-2">
-                            <span className="font-mono text-sm">
-                              {business.biz_secret}
-                            </span>
+                            <span className="font-mono text-sm">{business.biz_secret}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-gray-300 text-sm text-left align-top py-4 whitespace-nowrap">
@@ -492,6 +503,13 @@ export default function BusinessManagePage() {
         onClose={closeOperatorsModal}
         businessId={operatorsModal.businessId}
         businessName={operatorsModal.businessName}
+      />
+
+      <BizConfigModal
+        isOpen={configModal.isOpen}
+        onClose={closeConfigModal}
+        businessId={configModal.businessId}
+        businessName={configModal.businessName}
       />
     </div>
   )
