@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react";
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -105,7 +107,7 @@ export default function BusinessPage() {
         contact_email: "",
       })
       // 重新加载业务方列表
-      fetchBusinesses(currentPage)
+      fetchBusinesses(currentPage).then(() => {})
     }
   }
 
@@ -117,26 +119,40 @@ export default function BusinessPage() {
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="w-full space-y-6">
-        <Breadcrumb items={breadcrumbItems} />
+        <Breadcrumb items={breadcrumbItems}/>
 
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">业务方管理</h1>
-            <p className="text-gray-400 mt-2">管理和查看所有业务方信息</p>
+            <h1 className="text-3xl font-bold text-white">业务管理</h1>
           </div>
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
               <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                新增业务方
+                <Plus className="mr-2 h-4 w-4"/>
+                新增业务
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-black border-gray-900 text-white">
               <DialogHeader>
-                <DialogTitle className="text-white">新增业务方</DialogTitle>
-                <DialogDescription className="text-gray-400">填写业务方基本信息</DialogDescription>
+                <DialogTitle className="text-white">新增业务</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="biz_type" className="text-gray-300">
+                    业务类型
+                  </Label>
+                  <select
+                    id="biz_type"
+                    value={createForm.biz_type}
+                    onChange={(e) =>
+                      setCreateForm((prev) => ({ ...prev, biz_type: e.target.value as "individual" | "organization" }))
+                    }
+                    className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white"
+                  >
+                    <option value="individual">个人</option>
+                    <option value="organization">组织</option>
+                  </select>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="biz_key" className="text-gray-300">
                     业务Key
@@ -151,31 +167,15 @@ export default function BusinessPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="biz_name" className="text-gray-300">
-                    业务方名称
+                    业务名
                   </Label>
                   <Input
                     id="biz_name"
                     value={createForm.biz_name}
                     onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_name: e.target.value }))}
                     className="bg-gray-900 border-gray-800 text-white"
-                    placeholder="请输入业务方名称"
+                    placeholder="请输入业务名"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="biz_type" className="text-gray-300">
-                    业务方类型
-                  </Label>
-                  <select
-                    id="biz_type"
-                    value={createForm.biz_type}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({ ...prev, biz_type: e.target.value as "individual" | "organization" }))
-                    }
-                    className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white"
-                  >
-                    <option value="organization">组织</option>
-                    <option value="individual">个人</option>
-                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact" className="text-gray-300">
@@ -222,7 +222,7 @@ export default function BusinessPage() {
                   >
                     {createLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                         创建中...
                       </>
                     ) : (
@@ -253,7 +253,7 @@ export default function BusinessPage() {
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2" />
+                <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2"/>
                 <span className="text-gray-400">加载中...</span>
               </div>
             ) : (
@@ -261,99 +261,91 @@ export default function BusinessPage() {
                 <div className="w-full">
                   <table className="w-full table-fixed">
                     <thead>
-                      <tr className="border-b border-gray-800">
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[12%]">业务方名称</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[8%]">类型</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">联系人</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[15%]">联系人邮箱</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">业务Key</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[15%]">业务密钥</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">创建时间</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">更新时间</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[5%]">操作员</th>
-                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[5%]">配置</th>
-                      </tr>
+                    <tr className="border-b border-gray-800">
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[8%]">ID</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[12%]">业务名</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[8%]">类型</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">联系人</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">联系人邮箱</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">业务 Key</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">业务密钥</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">创建时间</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">更新时间</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[6%]">操作员</th>
+                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[6%]">配置</th>
+                    </tr>
                     </thead>
                     <tbody>
-                      {businesses.map((business) => (
-                        <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                          <td className="py-3 px-2 text-white truncate" title={business.biz_name}>
-                            {business.biz_name}
-                          </td>
-                          <td className="py-3 px-2">
-                            <Badge
-                              variant="secondary"
-                              className={
-                                business.biz_type === "organization"
-                                  ? "bg-blue-600/20 text-blue-400 border-blue-600/30 text-xs"
-                                  : "bg-purple-600/20 text-purple-400 border-purple-600/30 text-xs"
-                              }
-                            >
-                              {business.biz_type === "organization" ? "组织" : "个人"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-2 text-gray-300 truncate" title={business.contact}>
-                            {business.contact}
-                          </td>
-                          <td className="py-3 px-2 text-gray-300 truncate" title={business.contact_email}>
-                            {business.contact_email}
-                          </td>
-                          <td className="py-3 px-2">
-                            <Badge
-                              variant="secondary"
-                              className="bg-gray-900 text-gray-300 border-gray-800 text-xs truncate max-w-full"
-                              title={business.biz_key}
-                            >
-                              {business.biz_key}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-2">
-                            <div className="flex items-center space-x-1">
+                    {businesses.map((business) => (
+                      <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                        <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.created_at)}>
+                          {business.id}
+                        </td>
+                        <td className="py-3 px-2 text-white truncate" title={business.biz_name}>
+                          {business.biz_name}
+                        </td>
+                        <td className="py-3 px-2">
+                          <Badge
+                            variant="secondary"
+                            className={
+                              business.biz_type === "organization"
+                                ? "bg-blue-600/20 text-blue-400 border-blue-600/30 text-xs"
+                                : "bg-purple-600/20 text-purple-400 border-purple-600/30 text-xs"
+                            }
+                          >
+                            {business.biz_type === "organization" ? "组织" : "个人"}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-2 text-gray-300 truncate" title={business.contact}>
+                          {business.contact}
+                        </td>
+                        <td className="py-3 px-2 text-gray-300 truncate" title={business.contact_email}>
+                          {business.contact_email}
+                        </td>
+                        <td className="py-3 px-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-gray-900 text-gray-300 border-gray-800 text-xs truncate max-w-full"
+                            title={business.biz_key}
+                          >
+                            {business.biz_key}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center space-x-1">
                               <span className="font-mono text-xs text-gray-300 truncate flex-1">
-                                {showSecrets[business.id] ? business.biz_secret : "••••••••••••••••"}
+                                {business.biz_secret}
                               </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => toggleSecretVisibility(business.id)}
-                                className="h-5 w-5 p-0 text-gray-400 hover:text-gray-300 flex-shrink-0"
-                              >
-                                {showSecrets[business.id] ? (
-                                  <EyeOff className="h-3 w-3" />
-                                ) : (
-                                  <Eye className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </div>
-                          </td>
-                          <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.created_at)}>
-                            {formatTimestamp(business.created_at).split(" ")[0]}
-                          </td>
-                          <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.updated_at)}>
-                            {formatTimestamp(business.updated_at).split(" ")[0]}
-                          </td>
-                          <td className="py-3 px-2">
-                            <Button
-                              onClick={() => handleViewOperators(business)}
-                              size="sm"
-                              variant="outline"
-                              className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black h-7 px-2 text-xs"
-                            >
-                              <Users className="h-3 w-3" />
-                            </Button>
-                          </td>
-                          <td className="py-3 px-2">
-                            <Button
-                              onClick={() => handleViewConfig(business)}
-                              size="sm"
-                              variant="outline"
-                              className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black h-7 px-2 text-xs"
-                            >
-                              <Settings className="h-3 w-3" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.created_at)}>
+                          {formatTimestamp(business.updated_at).split(" ")[0]}
+                        </td>
+                        <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.updated_at)}>
+                          {formatTimestamp(business.updated_at).split(" ")[0]}
+                        </td>
+                        <td className="py-3 px-2">
+                          <Button
+                            onClick={() => handleViewOperators(business)}
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black h-7 px-2 text-xs"
+                          >
+                            <Users className="h-3 w-3"/>
+                          </Button>
+                        </td>
+                        <td className="py-3 px-2">
+                          <Button
+                            onClick={() => handleViewConfig(business)}
+                            size="sm"
+                            variant="outline"
+                            className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black h-7 px-2 text-xs"
+                          >
+                            <Settings className="h-3 w-3"/>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
                     </tbody>
                   </table>
                 </div>
