@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Loader2, Settings, Save, Edit, Plus, Trash2, Database } from "lucide-react"
 import { configApi, type BizConfig, type CreateConfigRequest, type ChannelItem } from "@/lib/config-api"
-import { formatTimestamp } from "@/lib/utils"
 import { useApi } from "@/hooks/use-api"
 
 interface BizConfigModalProps {
@@ -126,7 +125,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       if (fetchedRef.current !== businessId) {
         console.log("调用接口获取配置")
         fetchedRef.current = businessId // 记录当前已获取的 businessId
-        fetchConfig() // 打开模态框时立即调用API获取配置
+        fetchConfig().then(() => {}) // 打开模态框时立即调用API获取配置
         setIsEditing(false)
         // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
       }
@@ -242,7 +241,6 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                   <Badge variant="secondary" className="bg-orange-600/20 text-orange-400 border-orange-600/30">
                     {businessName}
                   </Badge>
-                  <span className="text-gray-400 text-sm">业务方ID: {businessId}</span>
                 </div>
                 <div className="flex space-x-2">
                   {isEditing ? (
@@ -680,28 +678,6 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                       </div>
                     </CardContent>
                   </Card>
-
-                  {/* 时间信息 */}
-                  {config && (
-                    <Card className="bg-gray-900 border-gray-800">
-                      <CardHeader>
-                        <CardTitle className="text-white text-lg">时间信息</CardTitle>
-                        <CardDescription className="text-gray-400">配置的创建和更新时间</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-gray-400 text-sm">创建时间</Label>
-                            <div className="text-white">{formatTimestamp(config.created_at)}</div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-gray-400 text-sm">更新时间</Label>
-                            <div className="text-white">{formatTimestamp(config.updated_at)}</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
               )}
             </>

@@ -72,20 +72,6 @@ interface GetConfigRequest {
 }
 
 export const configApi = {
-  // 获取配置列表（分页）
-  async getConfigList(params: ConfigListRequest): Promise<ApiResponse<ConfigListResponse>> {
-    const queryParams = new URLSearchParams({
-      offset: params.offset.toString(),
-      limit: params.limit.toString(),
-    })
-
-    if (params.biz_id) {
-      queryParams.append("biz_id", params.biz_id)
-    }
-
-    return api.get<ConfigListResponse>(`/v1/biz_conf/list?${queryParams.toString()}`)
-  },
-
   // 获取业务方配置
   async getBizConfig(params: GetConfigRequest): Promise<ApiResponse<BizConfig>> {
     const queryParams = new URLSearchParams({
@@ -97,22 +83,7 @@ export const configApi = {
 
   // 创建或更新业务方配置
   async saveBizConfig(config: CreateConfigRequest): Promise<ApiResponse<BizConfig>> {
-    return api.post<BizConfig>("/v1/biz_config/post", config)
-  },
-
-  // 创建配置
-  async createConfig(config: CreateConfigRequest): Promise<ApiResponse<BizConfig>> {
-    return api.post<BizConfig>("/v1/biz_conf/save", config)
-  },
-
-  // 更新配置
-  async updateConfig(config: UpdateConfigRequest): Promise<ApiResponse<BizConfig>> {
-    return api.put<BizConfig>(`/v1/biz_conf/${config.id}`, config)
-  },
-
-  // 删除配置
-  async deleteConfig(id: string): Promise<ApiResponse<void>> {
-    return api.delete<void>(`/v1/biz_conf/${id}`)
+    return api.post<BizConfig>("/v1/biz_config/save", config)
   },
 }
 
