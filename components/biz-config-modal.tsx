@@ -1,4 +1,6 @@
 "use client"
+
+import React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -18,11 +20,12 @@ interface BizConfigModalProps {
   businessName: string
 }
 
-export function BizConfigModal({ isOpen, onClose, businessId, businessName }: BizConfigModalProps) {
+export function BizConfigModal({isOpen, onClose, businessId, businessName}: BizConfigModalProps) {
   const [config, setConfig] = useState<BizConfig | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [hasData, setHasData] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveErrorMsg, setSaveErrorMsg] = useState<string>("")
   const fetchedRef = useRef<string | null>(null) // 记录已经获取过配置的 businessId
   const [formData, setFormData] = useState<CreateConfigRequest>({
     biz_id: businessId,
@@ -56,20 +59,26 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   })
 
   // 获取配置的 API hook
-  const { loading: getConfigLoading, error: getConfigError, execute: executeGetConfig } = useApi(configApi.getBizConfig)
+  const {
+    loading: getConfigLoading,
+    error: getConfigError,
+    execute: executeGetConfig,
+    reset: resetGetConfig
+  } = useApi(configApi.getBizConfig)
 
   // 保存配置的 API hook
   const {
     loading: saveConfigLoading,
     error: saveConfigError,
     execute: executeSaveConfig,
+    reset: resetSaveConfig,
   } = useApi(configApi.saveBizConfig)
 
   // 获取配置信息
   const fetchConfig = async () => {
     if (!businessId) return
 
-    const response = await executeGetConfig({ biz_id: businessId })
+    const response = await executeGetConfig({biz_id: businessId})
 
     if (response.code === 200 && response.data) {
       setConfig(response.data)
@@ -87,30 +96,30 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       setHasData(false) // 无数据时设置为false，显示空状态
       setFormData({
         biz_id: businessId,
-        rate_limit: 100,
+        rate_limit: 0,
         channel_config: {
           channels: [],
           retry_policy_config: {
-            initial_interval: 1000,
-            max_interval: 30000,
+            initial_interval: 3000,
+            max_interval: 120000,
             max_retry_times: 3,
           },
         },
         quota_config: {
           daily: {
-            sms: 1000,
-            email: 5000,
+            sms: 10,
+            email: 20,
           },
           monthly: {
-            sms: 30000,
-            email: 150000,
+            sms: 100,
+            email: 200,
           },
         },
         callback_config: {
           service_name: "",
           retry_policy_config: {
-            initial_interval: 1000,
-            max_interval: 30000,
+            initial_interval: 3000,
+            max_interval: 120000,
             max_retry_times: 3,
           },
         },
@@ -122,9 +131,9 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
     if (isOpen && businessId) {
       // 只有当是新的 businessId 或首次打开时才调用接口
       if (fetchedRef.current !== businessId) {
-        console.log("调用接口获取配置")
         fetchedRef.current = businessId // 记录当前已获取的 businessId
-        fetchConfig().then(() => {}) // 打开模态框时立即调用API获取配置
+        fetchConfig().then(() => {
+        }) // 打开模态框时立即调用API获取配置
         setIsEditing(false)
         setSaveSuccess(false) // 重置保存成功状态
         // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
@@ -133,18 +142,22 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       // 模态框关闭时重置，以便下次打开时能重新获取数据
       fetchedRef.current = null
       setSaveSuccess(false) // 重置保存成功状态
+      setSaveErrorMsg("") // 重置错误状态
+      resetGetConfig() // 清理获取配置的错误状态
+      resetSaveConfig() // 清理保存配置的错误状态
     }
   }, [isOpen, businessId])
 
   const handleSave = async () => {
     setSaveSuccess(false) // 重置保存成功状态
+    setSaveErrorMsg("") // 重置错误信息
     const response = await executeSaveConfig(formData)
 
-    if (response.code === 200 && response.data) {
-      setConfig(response.data)
+    if (response.code === 200) {
       setHasData(true)
       setIsEditing(false)
       setSaveSuccess(true) // 设置保存成功状态
+      resetGetConfig() // 清理获取配置时的错误状态
 
       // 3秒后自动隐藏成功提示
       setTimeout(() => {
@@ -157,6 +170,9 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
     setIsEditing(true)
     setHasData(true) // 点击编辑时显示表格
     setSaveSuccess(false) // 重置保存成功状态
+    setSaveErrorMsg("") // 重置错误状态
+    resetGetConfig() // 清理获取配置的错误状态
+    resetSaveConfig() // 清理保存配置的错误状态
   }
 
   const handleCancel = () => {
@@ -171,16 +187,19 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
     }
     setIsEditing(false)
     setSaveSuccess(false) // 重置保存成功状态
+    setSaveErrorMsg("") // 重置错误状态
+    resetGetConfig() // 清理获取配置的错误状态
+    resetSaveConfig() // 清理保存配置的错误状态
   }
 
   const updateFormData = (path: string, value: any) => {
     setFormData((prev) => {
       const keys = path.split(".")
-      const newData = { ...prev }
+      const newData = {...prev}
       let current: any = newData
 
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = { ...current[keys[i]] }
+        current[keys[i]] = {...current[keys[i]]}
         current = current[keys[i]]
       }
 
@@ -208,18 +227,18 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   // 更新渠道项
   const updateChannel = (index: number, field: keyof ChannelItem, value: any) => {
     const newChannels = [...formData.channel_config.channels]
-    newChannels[index] = { ...newChannels[index], [field]: value }
+    newChannels[index] = {...newChannels[index], [field]: value}
     updateFormData("channel_config.channels", newChannels)
   }
 
   // 渲染空状态
   const renderEmptyState = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Database className="h-16 w-16 text-gray-600 mb-4" />
+      <Database className="h-16 w-16 text-gray-600 mb-4"/>
       <h3 className="text-lg font-medium text-gray-300 mb-2">暂无配置数据</h3>
       <p className="text-gray-500 mb-6">该业务方还没有配置信息，点击编辑按钮开始配置</p>
       <Button onClick={handleEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
-        <Edit className="mr-2 h-4 w-4" />
+        <Edit className="mr-2 h-4 w-4"/>
         开始配置
       </Button>
     </div>
@@ -230,7 +249,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       <DialogContent className="bg-black border-gray-900 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
-            <Settings className="mr-2 h-5 w-5 text-orange-500" />
+            <Settings className="mr-2 h-5 w-5 text-orange-500"/>
             {businessName} - 业务方配置
           </DialogTitle>
           <DialogDescription className="text-gray-400">查看和编辑该业务方的配置信息</DialogDescription>
@@ -239,7 +258,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
         <div className="mt-4 space-y-6">
           {getConfigLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2" />
+              <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2"/>
               <span className="text-gray-400">加载配置中...</span>
             </div>
           ) : (
@@ -269,12 +288,12 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                       >
                         {saveConfigLoading ? (
                           <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                             保存中...
                           </>
                         ) : (
                           <>
-                            <Save className="mr-2 h-4 w-4" />
+                            <Save className="mr-2 h-4 w-4"/>
                             保存
                           </>
                         )}
@@ -282,7 +301,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                     </>
                   ) : (
                     <Button onClick={handleEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
-                      <Edit className="mr-2 h-4 w-4" />
+                      <Edit className="mr-2 h-4 w-4"/>
                       {hasData ? "编辑配置" : "开始配置"}
                     </Button>
                   )}
@@ -293,19 +312,23 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
               {saveSuccess && (
                 <div className="bg-green-900/50 border border-green-800 rounded-lg p-3">
                   <div className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                    <CheckCircle className="h-5 w-5 text-green-400 mr-2"/>
                     <p className="text-green-300 text-sm">配置保存成功！</p>
                   </div>
                 </div>
               )}
 
               {/* 错误提示 */}
-              {(getConfigError || saveConfigError) && (
+              {(getConfigError || saveConfigError || saveErrorMsg) && (
                 <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
                   <div className="flex items-center">
-                    <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                    <AlertCircle className="h-5 w-5 text-red-400 mr-2"/>
                     <p className="text-red-300 text-sm">
-                      {saveConfigError ? `保存失败: ${saveConfigError}` : `加载失败: ${getConfigError}`}
+                      {saveErrorMsg
+                        ? saveErrorMsg
+                        : saveConfigError
+                          ? `保存失败: ${saveConfigError}`
+                          : `加载失败: ${getConfigError}`}
                     </p>
                   </div>
                 </div>
@@ -360,7 +383,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                               size="sm"
                               className="bg-green-600 hover:bg-green-700 text-white"
                             >
-                              <Plus className="mr-1 h-4 w-4" />
+                              <Plus className="mr-1 h-4 w-4"/>
                               添加渠道
                             </Button>
                           )}
@@ -420,7 +443,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                                       variant="destructive"
                                       className="bg-red-600 hover:bg-red-700"
                                     >
-                                      <Trash2 className="h-4 w-4" />
+                                      <Trash2 className="h-4 w-4"/>
                                     </Button>
                                   </>
                                 ) : (
@@ -442,7 +465,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                                     </div>
                                     <div className="flex-1">
                                       <Badge
-                                        variant={channel.enabled ? "default" : "secondary"}
+                                        variant={(channel.enabled ? "default" : "secondary") as "default" | "secondary"}
                                         className={
                                           channel.enabled
                                             ? "bg-green-600/20 text-green-400 border-green-600/30"

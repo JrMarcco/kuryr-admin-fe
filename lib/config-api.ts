@@ -1,4 +1,7 @@
-import { api, type ApiResponse } from "./api"
+"use client"
+
+import type { ApiResponse } from "@/lib/api"
+import { api } from "./api"
 
 interface RetryPolicyConfig {
   initial_interval: number // 初始重试间隔（毫秒）
@@ -44,27 +47,12 @@ interface BizConfig {
   updated_at: number
 }
 
-interface ConfigListResponse {
-  total: number
-  content: BizConfig[]
-}
-
-interface ConfigListRequest {
-  offset: number
-  limit: number
-  biz_id?: string
-}
-
 interface CreateConfigRequest {
   biz_id: string
   rate_limit: number
   channel_config: ChannelConfig
   quota_config: QuotaConfig
   callback_config: CallbackConfig
-}
-
-interface UpdateConfigRequest extends CreateConfigRequest {
-  id: string
 }
 
 interface GetConfigRequest {
@@ -77,7 +65,6 @@ export const configApi = {
     const queryParams = new URLSearchParams({
       biz_id: params.biz_id,
     })
-
     return api.get<BizConfig>(`/v1/biz_config/get?${queryParams.toString()}`)
   },
 
@@ -89,10 +76,7 @@ export const configApi = {
 
 export type {
   BizConfig,
-  ConfigListResponse,
-  ConfigListRequest,
   CreateConfigRequest,
-  UpdateConfigRequest,
   GetConfigRequest,
   RetryPolicyConfig,
   ChannelConfig,
