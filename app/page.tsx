@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import * as React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -175,7 +175,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md bg-black border-gray-900">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <MessageSquare className="h-12 w-12 text-orange-500" />
+            <MessageSquare className="h-12 w-12 text-orange-500"/>
           </div>
           <CardTitle className="text-2xl font-bold text-white">Kuryr</CardTitle>
           <CardDescription className="text-gray-400">请选择登录方式</CardDescription>
@@ -207,7 +207,7 @@ export default function LoginPage() {
             {/* 账号输入 */}
             <div className="space-y-2">
               <Label htmlFor="account" className="text-gray-300 flex items-center gap-2">
-                {accountType === "email" ? <Mail className="h-4 w-4" /> : <Phone className="h-4 w-4" />}
+                {accountType === "email" ? <Mail className="h-4 w-4"/> : <Phone className="h-4 w-4"/>}
                 手机号或邮箱
               </Label>
               <Input

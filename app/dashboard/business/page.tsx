@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react"
+import * as React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -24,7 +25,7 @@ export default function BusinessPage() {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const pageSize = 10
 
-  const { loading, error, execute } = useApi(businessApi.getBusinessList)
+  const {loading, error, execute} = useApi(businessApi.getBusinessList)
 
   const fetchBusinesses = async (page: number) => {
     const offset = (page - 1) * pageSize
@@ -41,7 +42,8 @@ export default function BusinessPage() {
   }
 
   useEffect(() => {
-    fetchBusinesses(currentPage)
+    fetchBusinesses(currentPage).then(() => {
+    })
   }, [currentPage])
 
   const handlePageChange = (page: number) => {
@@ -59,14 +61,14 @@ export default function BusinessPage() {
   }
 
   const breadcrumbItems = [
-    { label: "首页", href: "/dashboard" },
-    { label: "业务方管理", href: "/dashboard/business" },
+    {label: "首页", href: "/dashboard"},
+    {label: "业务方管理", href: "/dashboard/business"},
   ]
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <Breadcrumb items={breadcrumbItems} />
+        <Breadcrumb items={breadcrumbItems}/>
 
         <div className="flex justify-between items-center">
           <div>
@@ -93,7 +95,7 @@ export default function BusinessPage() {
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2" />
+                <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2"/>
                 <span className="text-gray-400">加载中...</span>
               </div>
             ) : (
@@ -101,64 +103,64 @@ export default function BusinessPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-800">
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">业务方名称</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">业务方ID</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">状态</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">创建时间</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">更新时间</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">操作员管理</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium">配置管理</th>
-                      </tr>
+                    <tr className="border-b border-gray-800">
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">业务方名称</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">业务方ID</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">状态</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">创建时间</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">更新时间</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">操作员管理</th>
+                      <th className="text-left py-3 px-4 text-gray-300 font-medium">配置管理</th>
+                    </tr>
                     </thead>
                     <tbody>
-                      {businesses.map((business) => (
-                        <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                          <td className="py-3 px-4 text-white">{business.biz_name}</td>
-                          <td className="py-3 px-4 text-gray-300">{business.id}</td>
-                          <td className="py-3 px-4">
-                            <Badge
-                              variant="default"
-                              className="bg-green-600/20 text-green-400 border-green-600/30"
-                            >
-                              活跃
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4 text-gray-300">{formatTimestamp(business.created_at)}</td>
-                          <td className="py-3 px-4 text-gray-300">{formatTimestamp(business.updated_at)}</td>
-                          <td className="py-3 px-4">
-                            <Button
-                              onClick={() => handleViewOperators(business)}
-                              size="sm"
-                              variant="outline"
-                              className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black"
-                            >
-                              <Users className="mr-1 h-4 w-4" />
-                              查看
-                            </Button>
-                          </td>
-                          <td className="py-3 px-4">
-                            <Button
-                              onClick={() => handleViewConfig(business)}
-                              size="sm"
-                              variant="outline"
-                              className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black"
-                            >
-                              <Settings className="mr-1 h-4 w-4" />
-                              查看配置
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                    {businesses.map((business) => (
+                      <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                        <td className="py-3 px-4 text-white">{business.biz_name}</td>
+                        <td className="py-3 px-4 text-gray-300">{business.id}</td>
+                        <td className="py-3 px-4">
+                          <Badge
+                            variant="default"
+                            className="bg-green-600/20 text-green-400 border-green-600/30"
+                          >
+                            活跃
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-gray-300">{formatTimestamp(business.created_at)}</td>
+                        <td className="py-3 px-4 text-gray-300">{formatTimestamp(business.updated_at)}</td>
+                        <td className="py-3 px-4">
+                          <Button
+                            onClick={() => handleViewOperators(business)}
+                            size="sm"
+                            variant="outline"
+                            className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black"
+                          >
+                            <Users className="mr-1 h-4 w-4"/>
+                            查看
+                          </Button>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Button
+                            onClick={() => handleViewConfig(business)}
+                            size="sm"
+                            variant="outline"
+                            className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black"
+                          >
+                            <Settings className="mr-1 h-4 w-4"/>
+                            查看配置
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
                     </tbody>
                   </table>
                 </div>
 
                 {totalPages > 1 && (
                   <div className="mt-6">
-                    <Pagination 
-                      currentPage={currentPage} 
-                      totalPages={totalPages} 
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
                       pageSize={pageSize}
                       totalItems={totalCount}
                       onPageChange={handlePageChange}

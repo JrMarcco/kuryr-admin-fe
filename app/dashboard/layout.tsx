@@ -7,7 +7,6 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
   LayoutDashboard,
   Building2,
@@ -44,11 +43,6 @@ const sidebarItems: SidebarItem[] = [
         icon: Building2,
         label: "业务方信息",
         href: "/dashboard/business",
-      },
-      {
-        icon: Settings,
-        label: "业务方配置",
-        href: "/dashboard/business/config",
       },
     ],
   },
@@ -145,10 +139,10 @@ export default function DashboardLayout({
             }`}
           >
             <div className="flex items-center">
-              <item.icon className="mr-3 h-5 w-5" />
+              <item.icon className="mr-3 h-5 w-5"/>
               {item.label}
             </div>
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {isExpanded ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
           </button>
           {isExpanded && (
             <div className="ml-4 space-y-1">{item.children!.map((child) => renderSidebarItem(child, level + 1))}</div>
@@ -170,7 +164,7 @@ export default function DashboardLayout({
         }`}
         onClick={() => setSidebarOpen(false)}
       >
-        <item.icon className="mr-3 h-5 w-5" />
+        <item.icon className="mr-3 h-5 w-5"/>
         {item.label}
       </Link>
     )
@@ -205,7 +199,7 @@ export default function DashboardLayout({
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-400 hover:text-white"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5"/>
             </Button>
           </div>
 
@@ -235,7 +229,7 @@ export default function DashboardLayout({
                     className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
                     title="登出"
                   >
-                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4"/>}
                   </Button>
                 </div>
               </CardContent>
@@ -254,9 +248,9 @@ export default function DashboardLayout({
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-gray-400 hover:text-white"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5"/>
           </Button>
-          <div className="flex-1" />
+          <div className="flex-1"/>
         </header>
 
         {/* 页面内容 */}
@@ -265,7 +259,7 @@ export default function DashboardLayout({
 
       {/* 移动端遮罩 */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)}/>
       )}
     </div>
   )
