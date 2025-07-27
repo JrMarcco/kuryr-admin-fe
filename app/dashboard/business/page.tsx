@@ -11,12 +11,11 @@ import { Label } from "@/components/ui/label"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Loader2, Settings, Users, Plus, Eye, EyeOff } from "lucide-react"
+import { Loader2, Settings, Users, Plus } from "lucide-react"
 import { businessApi, type Business } from "@/lib/business-api"
 import { formatTimestamp } from "@/lib/utils"
 import { useApi } from "@/hooks/use-api"
@@ -42,7 +41,6 @@ export default function BusinessPage() {
   const [isOperatorsModalOpen, setIsOperatorsModalOpen] = useState(false)
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [showSecrets, setShowSecrets] = useState<{ [key: string]: boolean }>({})
   const [createForm, setCreateForm] = useState<CreateBusinessForm>({
     biz_key: "",
     biz_name: "",
@@ -85,13 +83,6 @@ export default function BusinessPage() {
   const handleViewConfig = (business: Business) => {
     setSelectedBusiness(business)
     setIsConfigModalOpen(true)
-  }
-
-  const toggleSecretVisibility = (id: string) => {
-    setShowSecrets((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }))
   }
 
   const handleCreateBusiness = async () => {
