@@ -14,6 +14,7 @@ export interface Business {
   biz_name: string
   biz_key: string
   biz_secret: string
+  biz_type: "individual" | "organization"
   contact: string
   contact_email: string
   created_at: number
@@ -30,9 +31,10 @@ interface BusinessListRequest {
   limit: number
 }
 
-interface CreateBusinessRequest {
-  biz_name: string
+export interface CreateBusinessRequest {
   biz_key: string
+  biz_name: string
+  biz_type: "individual" | "organization"
   contact: string
   contact_email: string
 }
