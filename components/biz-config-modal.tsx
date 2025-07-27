@@ -1,6 +1,4 @@
 "use client"
-
-import React from "react"
 import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -9,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, Settings, Save, Edit, Plus, Trash2, Database } from "lucide-react"
+import { Loader2, Settings, Save, Edit, Plus, Trash2, Database, CheckCircle, AlertCircle } from "lucide-react"
 import { configApi, type BizConfig, type CreateConfigRequest, type ChannelItem } from "@/lib/config-api"
 import { useApi } from "@/hooks/use-api"
 
@@ -24,6 +22,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   const [config, setConfig] = useState<BizConfig | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [hasData, setHasData] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const fetchedRef = useRef<string | null>(null) // 记录已经获取过配置的 businessId
   const [formData, setFormData] = useState<CreateConfigRequest>({
     biz_id: businessId,
@@ -127,28 +126,37 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
         fetchedRef.current = businessId // 记录当前已获取的 businessId
         fetchConfig().then(() => {}) // 打开模态框时立即调用API获取配置
         setIsEditing(false)
+        setSaveSuccess(false) // 重置保存成功状态
         // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
       }
     } else if (!isOpen) {
       // 模态框关闭时重置，以便下次打开时能重新获取数据
       fetchedRef.current = null
+      setSaveSuccess(false) // 重置保存成功状态
     }
   }, [isOpen, businessId])
 
   const handleSave = async () => {
+    setSaveSuccess(false) // 重置保存成功状态
     const response = await executeSaveConfig(formData)
 
     if (response.code === 200 && response.data) {
-      setConfig(response.data )
+      setConfig(response.data)
       setHasData(true)
       setIsEditing(false)
-      // 可以添加成功提示
+      setSaveSuccess(true) // 设置保存成功状态
+
+      // 3秒后自动隐藏成功提示
+      setTimeout(() => {
+        setSaveSuccess(false)
+      }, 3000)
     }
   }
 
   const handleEdit = () => {
     setIsEditing(true)
     setHasData(true) // 点击编辑时显示表格
+    setSaveSuccess(false) // 重置保存成功状态
   }
 
   const handleCancel = () => {
@@ -162,6 +170,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       })
     }
     setIsEditing(false)
+    setSaveSuccess(false) // 重置保存成功状态
   }
 
   const updateFormData = (path: string, value: any) => {
@@ -280,10 +289,25 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                 </div>
               </div>
 
+              {/* 成功提示 */}
+              {saveSuccess && (
+                <div className="bg-green-900/50 border border-green-800 rounded-lg p-3">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                    <p className="text-green-300 text-sm">配置保存成功！</p>
+                  </div>
+                </div>
+              )}
+
               {/* 错误提示 */}
               {(getConfigError || saveConfigError) && (
                 <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
-                  <p className="text-red-300 text-sm">{getConfigError || saveConfigError}</p>
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                    <p className="text-red-300 text-sm">
+                      {saveConfigError ? `保存失败: ${saveConfigError}` : `加载失败: ${getConfigError}`}
+                    </p>
+                  </div>
                 </div>
               )}
 
