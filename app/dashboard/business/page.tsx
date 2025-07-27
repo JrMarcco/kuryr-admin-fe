@@ -116,7 +116,7 @@ export default function BusinessPage() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         <Breadcrumb items={breadcrumbItems} />
 
         <div className="flex justify-between items-center">
@@ -258,55 +258,65 @@ export default function BusinessPage() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="w-full">
+                  <table className="w-full table-fixed">
                     <thead>
                       <tr className="border-b border-gray-800">
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[120px]">业务方名称</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[100px]">业务方类型</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[120px]">联系人</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[180px]">联系人邮箱</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[140px]">业务Key</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[180px]">业务密钥</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[140px]">创建时间</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[140px]">更新时间</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[120px]">操作员管理</th>
-                        <th className="text-left py-3 px-4 text-gray-300 font-medium min-w-[120px]">配置管理</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[12%]">业务方名称</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[8%]">类型</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">联系人</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[15%]">联系人邮箱</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">业务Key</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[15%]">业务密钥</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">创建时间</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">更新时间</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[5%]">操作员</th>
+                        <th className="text-left py-3 px-2 text-gray-300 font-medium w-[5%]">配置</th>
                       </tr>
                     </thead>
                     <tbody>
                       {businesses.map((business) => (
                         <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                          <td className="py-3 px-4 text-white">{business.biz_name}</td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-2 text-white truncate" title={business.biz_name}>
+                            {business.biz_name}
+                          </td>
+                          <td className="py-3 px-2">
                             <Badge
                               variant="secondary"
                               className={
                                 business.biz_type === "organization"
-                                  ? "bg-blue-600/20 text-blue-400 border-blue-600/30"
-                                  : "bg-purple-600/20 text-purple-400 border-purple-600/30"
+                                  ? "bg-blue-600/20 text-blue-400 border-blue-600/30 text-xs"
+                                  : "bg-purple-600/20 text-purple-400 border-purple-600/30 text-xs"
                               }
                             >
                               {business.biz_type === "organization" ? "组织" : "个人"}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4 text-gray-300">{business.contact}</td>
-                          <td className="py-3 px-4 text-gray-300">{business.contact_email}</td>
-                          <td className="py-3 px-4">
-                            <Badge variant="secondary" className="bg-gray-900 text-gray-300 border-gray-800">
+                          <td className="py-3 px-2 text-gray-300 truncate" title={business.contact}>
+                            {business.contact}
+                          </td>
+                          <td className="py-3 px-2 text-gray-300 truncate" title={business.contact_email}>
+                            {business.contact_email}
+                          </td>
+                          <td className="py-3 px-2">
+                            <Badge
+                              variant="secondary"
+                              className="bg-gray-900 text-gray-300 border-gray-800 text-xs truncate max-w-full"
+                              title={business.biz_key}
+                            >
                               {business.biz_key}
                             </Badge>
                           </td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-mono text-sm text-gray-300">
+                          <td className="py-3 px-2">
+                            <div className="flex items-center space-x-1">
+                              <span className="font-mono text-xs text-gray-300 truncate flex-1">
                                 {showSecrets[business.id] ? business.biz_secret : "••••••••••••••••"}
                               </span>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => toggleSecretVisibility(business.id)}
-                                className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
+                                className="h-5 w-5 p-0 text-gray-400 hover:text-gray-300 flex-shrink-0"
                               >
                                 {showSecrets[business.id] ? (
                                   <EyeOff className="h-3 w-3" />
@@ -316,28 +326,30 @@ export default function BusinessPage() {
                               </Button>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-gray-300 text-sm">{formatTimestamp(business.created_at)}</td>
-                          <td className="py-3 px-4 text-gray-300 text-sm">{formatTimestamp(business.updated_at)}</td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.created_at)}>
+                            {formatTimestamp(business.created_at).split(" ")[0]}
+                          </td>
+                          <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.updated_at)}>
+                            {formatTimestamp(business.updated_at).split(" ")[0]}
+                          </td>
+                          <td className="py-3 px-2">
                             <Button
                               onClick={() => handleViewOperators(business)}
                               size="sm"
                               variant="outline"
-                              className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black"
+                              className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black h-7 px-2 text-xs"
                             >
-                              <Users className="mr-1 h-4 w-4" />
-                              查看
+                              <Users className="h-3 w-3" />
                             </Button>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-2">
                             <Button
                               onClick={() => handleViewConfig(business)}
                               size="sm"
                               variant="outline"
-                              className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black"
+                              className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black h-7 px-2 text-xs"
                             >
-                              <Settings className="mr-1 h-4 w-4" />
-                              查看配置
+                              <Settings className="h-3 w-3" />
                             </Button>
                           </td>
                         </tr>
