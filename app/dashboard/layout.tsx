@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Truck,
 } from "lucide-react"
 import { authApi } from "@/lib/auth-api"
 
@@ -45,6 +46,11 @@ const sidebarItems: SidebarItem[] = [
         href: "/dashboard/business",
       },
     ],
+  },
+  {
+    icon: Truck,
+    label: "供应商管理",
+    href: "/dashboard/providers",
   },
   {
     icon: MessageSquare,
@@ -108,7 +114,7 @@ export default function DashboardLayout({
 
     try {
       // 调用登出API
-      await authApi.logout();
+      await authApi.logout()
     } finally {
       // 无论API调用是否成功，都执行本地清理
       localStorage.removeItem("access-token")
@@ -139,10 +145,10 @@ export default function DashboardLayout({
             }`}
           >
             <div className="flex items-center">
-              <item.icon className="mr-3 h-5 w-5"/>
+              <item.icon className="mr-3 h-5 w-5" />
               {item.label}
             </div>
-            {isExpanded ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
+            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </button>
           {isExpanded && (
             <div className="ml-4 space-y-1">{item.children!.map((child) => renderSidebarItem(child, level + 1))}</div>
@@ -164,7 +170,7 @@ export default function DashboardLayout({
         }`}
         onClick={() => setSidebarOpen(false)}
       >
-        <item.icon className="mr-3 h-5 w-5"/>
+        <item.icon className="mr-3 h-5 w-5" />
         {item.label}
       </Link>
     )
@@ -199,7 +205,7 @@ export default function DashboardLayout({
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-400 hover:text-white"
             >
-              <X className="h-5 w-5"/>
+              <X className="h-5 w-5" />
             </Button>
           </div>
 
@@ -218,7 +224,9 @@ export default function DashboardLayout({
                       <span className="text-white text-sm font-medium">{getUserInitial(username)}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white" title={username}>{username}</p>
+                      <p className="text-sm font-medium text-white" title={username}>
+                        {username}
+                      </p>
                     </div>
                   </div>
                   <Button
@@ -229,7 +237,7 @@ export default function DashboardLayout({
                     className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
                     title="登出"
                   >
-                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4"/>}
+                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
                   </Button>
                 </div>
               </CardContent>
@@ -248,9 +256,9 @@ export default function DashboardLayout({
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-gray-400 hover:text-white"
           >
-            <Menu className="h-5 w-5"/>
+            <Menu className="h-5 w-5" />
           </Button>
-          <div className="flex-1"/>
+          <div className="flex-1" />
         </header>
 
         {/* 页面内容 */}
@@ -259,7 +267,7 @@ export default function DashboardLayout({
 
       {/* 移动端遮罩 */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)}/>
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
     </div>
   )
