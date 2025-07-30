@@ -1,205 +1,736 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Loader2, Save, FilePenLine, X } from "lucide-react"
-import { configApi, type BizConfig } from "@/lib/config-api"
-import type { Business } from "@/lib/business-api"
-import { useToast } from "@/hooks/use-toast"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Loader2, Settings, Save, Edit, Plus, Trash2, Database, CheckCircle, AlertCircle } from "lucide-react"
+import { configApi, type BizConfig, type CreateConfigRequest, type ChannelItem } from "@/lib/config-api"
+import { useApi } from "@/hooks/use-api"
 
 interface BizConfigModalProps {
   isOpen: boolean
   onClose: () => void
-  business: Business
+  businessId: string
+  businessName: string
 }
 
-const initialConfig: BizConfig = {
-  rate_limit: { qps: 0, daily_limit: 0 },
-  channel_configs: [],
-  quota_configs: [],
-  callback_config: { url: "", mode: "simple" },
-}
-
-export default function BizConfigModal({ isOpen, onClose, business }: BizConfigModalProps) {
-  const [config, setConfig] = useState<BizConfig>(initialConfig)
-  const [isLoading, setIsLoading] = useState(true)
+export function BizConfigModal({ isOpen, onClose, businessId, businessName }: BizConfigModalProps) {
+  const [config, setConfig] = useState<BizConfig | null>(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const { toast } = useToast()
+  const [hasData, setHasData] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveErrorMsg, setSaveErrorMsg] = useState<string>("")
+  const fetchedRef = useRef<string | null>(null) // 记录已经获取过配置的 businessId
+  const [formData, setFormData] = useState<CreateConfigRequest>({
+    biz_id: businessId,
+    rate_limit: 100,
+    channel_config: {
+      channels: [],
+      retry_policy_config: {
+        initial_interval: 1000,
+        max_interval: 30000,
+        max_retry_times: 3,
+      },
+    },
+    quota_config: {
+      daily: {
+        sms: 1000,
+        email: 5000,
+      },
+      monthly: {
+        sms: 30000,
+        email: 150000,
+      },
+    },
+    callback_config: {
+      service_name: "",
+      retry_policy_config: {
+        initial_interval: 1000,
+        max_interval: 30000,
+        max_retry_times: 3,
+      },
+    },
+  })
 
-  const fetchConfig = useCallback(async () => {
-    if (!business) return
-    setIsLoading(true)
-    try {
-      const data = await configApi.get(business.appId)
-      setConfig(data)
-    } catch (error) {
-      console.error("Failed to fetch config:", error)
-      setConfig(initialConfig)
-    } finally {
-      setIsLoading(false)
+  // 获取配置的 API hook
+  const {
+    loading: getConfigLoading,
+    error: getConfigError,
+    execute: executeGetConfig,
+    reset: resetGetConfig
+  } = useApi(configApi.getBizConfig)
+
+  // 保存配置的 API hook
+  const {
+    loading: saveConfigLoading,
+    error: saveConfigError,
+    execute: executeSaveConfig,
+    reset: resetSaveConfig,
+  } = useApi(configApi.saveBizConfig)
+
+  // 获取配置信息
+  const fetchConfig = async () => {
+    if (!businessId) return
+
+    const response = await executeGetConfig({ biz_id: businessId })
+
+    if (response.code === 200 && response.data) {
+      setConfig(response.data)
+      setHasData(true) // 有数据时设置为true，显示表格
+      setFormData({
+        biz_id: businessId,
+        rate_limit: response.data.rate_limit,
+        channel_config: response.data.channel_config,
+        quota_config: response.data.quota_config,
+        callback_config: response.data.callback_config,
+      })
+    } else {
+      // 如果没有配置，不显示表格
+      setConfig(null)
+      setHasData(false) // 无数据时设置为false，显示空状态
+      setFormData({
+        biz_id: businessId,
+        rate_limit: 0,
+        channel_config: {
+          channels: [],
+          retry_policy_config: {
+            initial_interval: 3000,
+            max_interval: 120000,
+            max_retry_times: 3,
+          },
+        },
+        quota_config: {
+          daily: {
+            sms: 10,
+            email: 20,
+          },
+          monthly: {
+            sms: 100,
+            email: 200,
+          },
+        },
+        callback_config: {
+          service_name: "",
+          retry_policy_config: {
+            initial_interval: 3000,
+            max_interval: 120000,
+            max_retry_times: 3,
+          },
+        },
+      })
     }
-  }, [business])
+  }
 
   useEffect(() => {
-    if (isOpen) {
-      fetchConfig()
-      setIsEditing(false)
+    if (isOpen && businessId) {
+      // 只有当是新的 businessId 或首次打开时才调用接口
+      if (fetchedRef.current !== businessId) {
+        fetchedRef.current = businessId // 记录当前已获取的 businessId
+        fetchConfig().then(() => {
+        }) // 打开模态框时立即调用API获取配置
+        setIsEditing(false)
+        setSaveSuccess(false) // 重置保存成功状态
+        // 不要在这里设置 setHasData(false)，让API响应决定是否有数据
+      }
+    } else if (!isOpen) {
+      // 模态框关闭时重置，以便下次打开时能重新获取数据
+      fetchedRef.current = null
+      setSaveSuccess(false) // 重置保存成功状态
+      setSaveErrorMsg("") // 重置错误状态
+      resetGetConfig() // 清理获取配置的错误状态
+      resetSaveConfig() // 清理保存配置的错误状态
     }
-  }, [isOpen, fetchConfig])
+  }, [isOpen, businessId])
 
   const handleSave = async () => {
-    if (!business) return
-    setIsSaving(true)
-    try {
-      await configApi.update(business.appId, config)
-      toast({ title: "成功", description: "配置已保存。" })
+    setSaveSuccess(false) // 重置保存成功状态
+    setSaveErrorMsg("") // 重置错误信息
+    const response = await executeSaveConfig(formData)
+
+    if (response.code === 200) {
+      setHasData(true)
       setIsEditing(false)
-    } catch (error) {
-      toast({
-        title: "保存失败",
-        description: "无法保存配置，请检查输入。",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
+      setSaveSuccess(true) // 设置保存成功状态
+      resetGetConfig() // 清理获取配置时的错误状态
+
+      // 3秒后自动隐藏成功提示
+      setTimeout(() => {
+        setSaveSuccess(false)
+      }, 3000)
     }
   }
 
-  const handleInputChange = (section: keyof BizConfig, field: string, value: string | number) => {
-    setConfig((prev) => ({
-      ...prev,
-      [section]: {
-        ...(prev[section] as object),
-        [field]: value,
-      },
-    }))
+  const handleEdit = () => {
+    setIsEditing(true)
+    setHasData(true) // 点击编辑时显示表格
+    setSaveSuccess(false) // 重置保存成功状态
+    setSaveErrorMsg("") // 重置错误状态
+    resetGetConfig() // 清理获取配置的错误状态
+    resetSaveConfig() // 清理保存配置的错误状态
   }
 
-  const renderRateLimit = () => (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="qps">QPS (每秒请求数)</Label>
-        <Input
-          id="qps"
-          type="number"
-          value={config.rate_limit.qps}
-          onChange={(e) => handleInputChange("rate_limit", "qps", Number.parseInt(e.target.value))}
-          disabled={!isEditing}
-        />
-      </div>
-      <div>
-        <Label htmlFor="daily_limit">每日限额</Label>
-        <Input
-          id="daily_limit"
-          type="number"
-          value={config.rate_limit.daily_limit}
-          onChange={(e) => handleInputChange("rate_limit", "daily_limit", Number.parseInt(e.target.value))}
-          disabled={!isEditing}
-        />
-      </div>
-    </div>
-  )
+  const handleCancel = () => {
+    if (config) {
+      setFormData({
+        biz_id: businessId,
+        rate_limit: config.rate_limit,
+        channel_config: config.channel_config,
+        quota_config: config.quota_config,
+        callback_config: config.callback_config,
+      })
+    }
+    setIsEditing(false)
+    setSaveSuccess(false) // 重置保存成功状态
+    setSaveErrorMsg("") // 重置错误状态
+    resetGetConfig() // 清理获取配置的错误状态
+    resetSaveConfig() // 清理保存配置的错误状态
+  }
 
-  const renderCallbackConfig = () => (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="callback_url">回调URL</Label>
-        <Input
-          id="callback_url"
-          value={config.callback_config.url}
-          onChange={(e) => handleInputChange("callback_config", "url", e.target.value)}
-          disabled={!isEditing}
-        />
-      </div>
-      <div className="flex items-center space-x-2">
-        <Label>简单模式</Label>
-        <Switch
-          checked={config.callback_config.mode === "full"}
-          onCheckedChange={(checked) => handleInputChange("callback_config", "mode", checked ? "full" : "simple")}
-          disabled={!isEditing}
-        />
-        <Label>完整模式</Label>
-      </div>
+  const updateFormData = (path: string, value: any) => {
+    setFormData((prev) => {
+      const keys = path.split(".")
+      const newData = { ...prev }
+      let current: any = newData
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] }
+        current = current[keys[i]]
+      }
+
+      current[keys[keys.length - 1]] = value
+      return newData
+    })
+  }
+
+  // 添加渠道
+  const addChannel = () => {
+    const newChannel: ChannelItem = {
+      channel: "sms",
+      priority: 1,
+      enabled: true,
+    }
+    updateFormData("channel_config.channels", [...formData.channel_config.channels, newChannel])
+  }
+
+  // 删除渠道
+  const removeChannel = (index: number) => {
+    const newChannels = formData.channel_config.channels.filter((_, i) => i !== index)
+    updateFormData("channel_config.channels", newChannels)
+  }
+
+  // 更新渠道项
+  const updateChannel = (index: number, field: keyof ChannelItem, value: any) => {
+    const newChannels = [...formData.channel_config.channels]
+    newChannels[index] = { ...newChannels[index], [field]: value }
+    updateFormData("channel_config.channels", newChannels)
+  }
+
+  // 渲染空状态
+  const renderEmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <Database className="h-16 w-16 text-gray-600 mb-4"/>
+      <h3 className="text-lg font-medium text-gray-300 mb-2">暂无配置数据</h3>
+      <p className="text-gray-500 mb-6">该业务方还没有配置信息，点击编辑按钮开始配置</p>
+      <Button onClick={handleEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
+        <Edit className="mr-2 h-4 w-4"/>
+        开始配置
+      </Button>
     </div>
   )
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="bg-black border-gray-900 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>业务配置 - {business.name}</DialogTitle>
-          <DialogDescription>查看和管理业务方的详细配置信息。</DialogDescription>
+          <DialogTitle className="text-white flex items-center">
+            <Settings className="mr-2 h-5 w-5 text-orange-500"/>
+            {businessName} - 业务方配置
+          </DialogTitle>
+          <DialogDescription className="text-gray-400">查看和编辑该业务方的配置信息</DialogDescription>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : (
-          <div className="max-h-[60vh] overflow-y-auto pr-4">
-            <Accordion type="multiple" defaultValue={["item-1", "item-2"]} className="w-full">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>速率限制</AccordionTrigger>
-                <AccordionContent>{renderRateLimit()}</AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>回调配置</AccordionTrigger>
-                <AccordionContent>{renderCallbackConfig()}</AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>渠道配置</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-muted-foreground">暂无渠道配置。</p>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger>配额配置</AccordionTrigger>
-                <AccordionContent>
-                  <p className="text-muted-foreground">暂无配额配置。</p>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
-        )}
-
-        <DialogFooter className="mt-4">
-          {isEditing ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditing(false)
-                  fetchConfig()
-                }}
-              >
-                <X className="mr-2 h-4 w-4" />
-                取消
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                保存
-              </Button>
-            </>
+        <div className="mt-4 space-y-6">
+          {getConfigLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2"/>
+              <span className="text-gray-400">加载配置中...</span>
+            </div>
           ) : (
-            <Button onClick={() => setIsEditing(true)}>
-              <FilePenLine className="mr-2 h-4 w-4" />
-              编辑
-            </Button>
+            <>
+              {/* 操作按钮 */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="bg-orange-600/20 text-orange-400 border-orange-600/30">
+                    {businessName}
+                  </Badge>
+                </div>
+                <div className="flex space-x-2">
+                  {isEditing ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={handleCancel}
+                        disabled={saveConfigLoading}
+                        className="border-gray-800 text-gray-300 hover:bg-gray-900 bg-black"
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        onClick={handleSave}
+                        disabled={saveConfigLoading}
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                      >
+                        {saveConfigLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                            保存中...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-4 w-4"/>
+                            保存
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={handleEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
+                      <Edit className="mr-2 h-4 w-4"/>
+                      {hasData ? "编辑配置" : "开始配置"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* 成功提示 */}
+              {saveSuccess && (
+                <div className="bg-green-900/50 border border-green-800 rounded-lg p-3">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-5 w-5 text-green-400 mr-2"/>
+                    <p className="text-green-300 text-sm">配置保存成功！</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 错误提示 */}
+              {(getConfigError || saveConfigError || saveErrorMsg) && (
+                <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-5 w-5 text-red-400 mr-2"/>
+                    <p className="text-red-300 text-sm">
+                      {saveErrorMsg
+                        ? saveErrorMsg
+                        : saveConfigError
+                          ? `保存失败: ${saveConfigError}`
+                          : `加载失败: ${getConfigError}`}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 配置表格或空状态 */}
+              {!hasData && !isEditing ? (
+                renderEmptyState()
+              ) : (
+                <div className="grid gap-6">
+                  {/* 限流阈值 */}
+                  <Card className="bg-gray-900 border-gray-800">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">限流阈值</CardTitle>
+                      <CardDescription className="text-gray-400">设置每秒最大请求数量</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {isEditing ? (
+                        <div className="space-y-2">
+                          <Label className="text-gray-300">限流阈值 (请求/秒)</Label>
+                          <Input
+                            type="number"
+                            value={formData.rate_limit}
+                            onChange={(e) => updateFormData("rate_limit", Number.parseInt(e.target.value) || 0)}
+                            className="bg-black border-gray-700 text-white"
+                            placeholder="请输入限流阈值"
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-white">
+                          <span className="text-2xl font-bold text-orange-400">{formData.rate_limit}</span>
+                          <span className="text-gray-400 ml-2">请求/秒</span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* 渠道配置 */}
+                  <Card className="bg-gray-900 border-gray-800">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">渠道配置</CardTitle>
+                      <CardDescription className="text-gray-400">配置可用渠道和重试策略</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 渠道项 */}
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <Label className="text-gray-300">渠道列表</Label>
+                          {isEditing && (
+                            <Button
+                              onClick={addChannel}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Plus className="mr-1 h-4 w-4"/>
+                              添加渠道
+                            </Button>
+                          )}
+                        </div>
+
+                        {formData.channel_config.channels.length === 0 ? (
+                          <div className="text-gray-400 text-center py-4">
+                            {isEditing ? "点击上方按钮添加渠道" : "暂无配置渠道"}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {formData.channel_config.channels.map((channel, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-4 p-3 bg-black rounded-lg border border-gray-700"
+                              >
+                                {isEditing ? (
+                                  <>
+                                    <div className="flex-1">
+                                      <Label className="text-gray-400 text-xs">渠道类型</Label>
+                                      <select
+                                        value={channel.channel}
+                                        onChange={(e) =>
+                                          updateChannel(index, "channel", e.target.value as "sms" | "email")
+                                        }
+                                        className="w-full mt-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white"
+                                      >
+                                        <option value="sms">短信 (SMS)</option>
+                                        <option value="email">邮件 (Email)</option>
+                                      </select>
+                                    </div>
+                                    <div className="flex-1">
+                                      <Label className="text-gray-400 text-xs">优先级 (1-9)</Label>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        max="9"
+                                        value={channel.priority}
+                                        onChange={(e) => {
+                                          const value = Number.parseInt(e.target.value) || 1
+                                          const clampedValue = Math.max(1, Math.min(9, value))
+                                          updateChannel(index, "priority", clampedValue)
+                                        }}
+                                        className="mt-1 bg-gray-800 border-gray-600 text-white"
+                                      />
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                      <Label className="text-gray-400 text-xs mb-2">启用状态</Label>
+                                      <Switch
+                                        checked={channel.enabled}
+                                        onCheckedChange={(checked) => updateChannel(index, "enabled", checked)}
+                                      />
+                                    </div>
+                                    <Button
+                                      onClick={() => removeChannel(index)}
+                                      size="sm"
+                                      variant="destructive"
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      <Trash2 className="h-4 w-4"/>
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex-1">
+                                      <Badge
+                                        variant="secondary"
+                                        className={
+                                          channel.channel === "sms"
+                                            ? "bg-blue-600/20 text-blue-400 border-blue-600/30"
+                                            : "bg-green-600/20 text-green-400 border-green-600/30"
+                                        }
+                                      >
+                                        {channel.channel === "sms" ? "短信" : "邮件"}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex-1 text-white">
+                                      优先级: <span className="text-orange-400 font-bold">{channel.priority}</span>
+                                    </div>
+                                    <div className="flex-1">
+                                      <Badge
+                                        variant={(channel.enabled ? "default" : "secondary") as "default" | "secondary"}
+                                        className={
+                                          channel.enabled
+                                            ? "bg-green-600/20 text-green-400 border-green-600/30"
+                                            : "bg-gray-600/20 text-gray-400 border-gray-600/30"
+                                        }
+                                      >
+                                        {channel.enabled ? "已启用" : "已禁用"}
+                                      </Badge>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 重试策略 */}
+                      <div className="space-y-3">
+                        <Label className="text-gray-300">重试策略配置</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">初始重试间隔 (毫秒)</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.channel_config.retry_policy_config.initial_interval}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "channel_config.retry_policy_config.initial_interval",
+                                    Number.parseInt(e.target.value) || 0,
+                                  )
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">
+                                {formData.channel_config.retry_policy_config.initial_interval}ms
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">最大重试间隔 (毫秒)</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.channel_config.retry_policy_config.max_interval}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "channel_config.retry_policy_config.max_interval",
+                                    Number.parseInt(e.target.value) || 0,
+                                  )
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">
+                                {formData.channel_config.retry_policy_config.max_interval}ms
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">最大重试次数</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.channel_config.retry_policy_config.max_retry_times}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "channel_config.retry_policy_config.max_retry_times",
+                                    Number.parseInt(e.target.value) || 0,
+                                  )
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">
+                                {formData.channel_config.retry_policy_config.max_retry_times}次
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* 配额配置 */}
+                  <Card className="bg-gray-900 border-gray-800">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">配额配置</CardTitle>
+                      <CardDescription className="text-gray-400">设置短信和邮件的日配额和月配额</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 日配额 */}
+                      <div className="space-y-3">
+                        <Label className="text-gray-300">日配额</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">短信日配额</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.quota_config.daily.sms}
+                                onChange={(e) =>
+                                  updateFormData("quota_config.daily.sms", Number.parseInt(e.target.value) || 0)
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">{formData.quota_config.daily.sms.toLocaleString()}</div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">邮件日配额</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.quota_config.daily.email}
+                                onChange={(e) =>
+                                  updateFormData("quota_config.daily.email", Number.parseInt(e.target.value) || 0)
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">{formData.quota_config.daily.email.toLocaleString()}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 月配额 */}
+                      <div className="space-y-3">
+                        <Label className="text-gray-300">月配额</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">短信月配额</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.quota_config.monthly.sms}
+                                onChange={(e) =>
+                                  updateFormData("quota_config.monthly.sms", Number.parseInt(e.target.value) || 0)
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">{formData.quota_config.monthly.sms.toLocaleString()}</div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">邮件月配额</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.quota_config.monthly.email}
+                                onChange={(e) =>
+                                  updateFormData("quota_config.monthly.email", Number.parseInt(e.target.value) || 0)
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">{formData.quota_config.monthly.email.toLocaleString()}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* 回调配置 */}
+                  <Card className="bg-gray-900 border-gray-800">
+                    <CardHeader>
+                      <CardTitle className="text-white text-lg">回调配置</CardTitle>
+                      <CardDescription className="text-gray-400">配置回调服务和重试策略</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* 服务名 */}
+                      <div className="space-y-2">
+                        <Label className="text-gray-300">服务名</Label>
+                        {isEditing ? (
+                          <Input
+                            value={formData.callback_config.service_name}
+                            onChange={(e) => updateFormData("callback_config.service_name", e.target.value)}
+                            className="bg-black border-gray-700 text-white"
+                            placeholder="请输入服务名"
+                          />
+                        ) : (
+                          <div className="text-white">{formData.callback_config.service_name || "未配置"}</div>
+                        )}
+                      </div>
+
+                      {/* 重试策略 */}
+                      <div className="space-y-3">
+                        <Label className="text-gray-300">重试策略配置</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">初始重试间隔 (毫秒)</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.callback_config.retry_policy_config.initial_interval}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "callback_config.retry_policy_config.initial_interval",
+                                    Number.parseInt(e.target.value) || 0,
+                                  )
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">
+                                {formData.callback_config.retry_policy_config.initial_interval}ms
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">最大重试间隔 (毫秒)</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.callback_config.retry_policy_config.max_interval}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "callback_config.retry_policy_config.max_interval",
+                                    Number.parseInt(e.target.value) || 0,
+                                  )
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">
+                                {formData.callback_config.retry_policy_config.max_interval}ms
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-gray-400 text-sm">最大重试次数</Label>
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={formData.callback_config.retry_policy_config.max_retry_times}
+                                onChange={(e) =>
+                                  updateFormData(
+                                    "callback_config.retry_policy_config.max_retry_times",
+                                    Number.parseInt(e.target.value) || 0,
+                                  )
+                                }
+                                className="bg-black border-gray-700 text-white"
+                              />
+                            ) : (
+                              <div className="text-white">
+                                {formData.callback_config.retry_policy_config.max_retry_times}次
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

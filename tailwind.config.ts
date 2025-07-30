@@ -30,28 +30,28 @@ const config: Config = {
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#111827", // gray-900
+          foreground: "#f3f4f6", // gray-100
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#0f0f0f", // 更深的黑色
+          foreground: "#9ca3af", // gray-400
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#1a1a1a", // 深黑色
+          foreground: "#f3f4f6", // gray-100
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#000000", // 纯黑色
+          foreground: "#f9fafb", // gray-50
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#000000", // 纯黑色
+          foreground: "#f9fafb", // gray-50
         },
       },
       borderRadius: {

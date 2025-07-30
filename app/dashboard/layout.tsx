@@ -38,8 +38,14 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     icon: Building2,
-    label: "业务方管理",
-    href: "/dashboard/business",
+    label: "业务管理",
+    children: [
+      {
+        icon: Building2,
+        label: "业务方信息",
+        href: "/dashboard/business",
+      },
+    ],
   },
   {
     icon: Truck,
@@ -71,9 +77,9 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const [expandedItems, setExpandedItems] = useState<string[]>(["业务方管理"])
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [username, setUsername] = useState<string>("Admin")
+  const [username, setUsername] = useState<string>("Admin") // 添加用户名状态
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username")
@@ -82,6 +88,7 @@ export default function DashboardLayout({
     }
   }, [])
 
+  // 检查当前路径是否激活
   const isActive = (href: string) => {
     if (href === "/dashboard") {
       return pathname === href
@@ -89,27 +96,37 @@ export default function DashboardLayout({
     return pathname.startsWith(href)
   }
 
+  // 检查是否有子项激活
   const hasActiveChild = (children: SidebarItem[]) => {
     return children.some((child) => child.href && isActive(child.href))
   }
 
+  // 切换展开状态
   const toggleExpanded = (label: string) => {
     setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
   }
 
+  // 处理登出
   const handleLogout = async () => {
     if (isLoggingOut) return
+
     setIsLoggingOut(true)
+
     try {
+      // 调用登出API
       await authApi.logout()
     } finally {
+      // 无论API调用是否成功，都执行本地清理
       localStorage.removeItem("access-token")
       localStorage.removeItem("refresh-token")
+
+      // 跳转到登录页
       router.push("/")
       setIsLoggingOut(false)
     }
   }
 
+  // 渲染侧边栏项目
   const renderSidebarItem = (item: SidebarItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0
     const isExpanded = expandedItems.includes(item.label)
@@ -123,8 +140,8 @@ export default function DashboardLayout({
             onClick={() => toggleExpanded(item.label)}
             className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
               hasActiveChildren
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                ? "bg-orange-900/50 text-orange-300"
+                : "text-gray-300 hover:bg-gray-800 hover:text-white"
             }`}
           >
             <div className="flex items-center">
@@ -146,8 +163,10 @@ export default function DashboardLayout({
         href={item.href!}
         className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
           isItemActive
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            ? "bg-orange-600 text-white"
+            : level > 0
+              ? "text-gray-400 hover:bg-gray-800 hover:text-white"
+              : "text-gray-300 hover:bg-gray-800 hover:text-white"
         }`}
         onClick={() => setSidebarOpen(false)}
       >
@@ -162,46 +181,50 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-black">
+      {/* 侧边栏 */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-background border-r border-border transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-900 transform transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0 lg:static lg:inset-0
       `}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between h-16 px-4 border-b border-border">
+          {/* Logo section */}
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-900">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">K</span>
+              <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">K</span>
               </div>
-              <span className="text-xl font-bold text-foreground">Kuryr</span>
+              <span className="text-xl font-bold text-white">Kuryr</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-muted-foreground hover:text-foreground"
+              className="lg:hidden text-gray-400 hover:text-white"
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
 
+          {/* Navigation - takes remaining space */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             {sidebarItems.map((item) => renderSidebarItem(item))}
           </nav>
 
-          <div className="border-t border-border p-4">
-            <Card className="bg-accent border-border">
+          {/* User info - stays at the bottom */}
+          <div className="border-t border-gray-900 p-4">
+            <Card className="bg-gray-900 border-gray-800">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <span className="text-primary-foreground text-sm font-medium">{getUserInitial(username)}</span>
+                    <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                      <span className="text-white text-sm font-medium">{getUserInitial(username)}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground" title={username}>
+                      <p className="text-sm font-medium text-white" title={username}>
                         {username}
                       </p>
                     </div>
@@ -211,7 +234,7 @@ export default function DashboardLayout({
                     size="sm"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="text-muted-foreground hover:text-red-500 hover:bg-destructive/20 p-2"
+                    className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
                     title="登出"
                   >
                     {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
@@ -223,24 +246,28 @@ export default function DashboardLayout({
         </div>
       </div>
 
+      {/* 主内容区域 */}
       <div className="flex-1 flex flex-col lg:ml-0">
-        <header className="h-16 bg-background border-b border-border flex items-center justify-between px-4 lg:px-6">
+        {/* 顶部导航栏 */}
+        <header className="h-16 bg-black border-b border-gray-900 flex items-center justify-between px-4 lg:px-6">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-muted-foreground hover:text-foreground"
+            className="lg:hidden text-gray-400 hover:text-white"
           >
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex-1" />
         </header>
 
+        {/* 页面内容 */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
 
+      {/* 移动端遮罩 */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
     </div>
   )

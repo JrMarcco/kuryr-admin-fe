@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
-import "./globals.css"
-import type React from "react"
+import type { Metadata } from 'next'
+import '../styles/globals.css'
+import React from "react";
 
 export const metadata: Metadata = {
-  title: "Kuryr 消息中心",
-  description: "一个统一的消息管理平台",
-  generator: "v0.dev",
+  title: 'v0 App',
+  description: 'Created with v0',
+  generator: 'v0.dev',
 }
 
 export default function RootLayout({
@@ -14,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-background text-foreground">{children}</body>
+    <html lang="en">
+    <body>{children}</body>
     </html>
   )
 }
