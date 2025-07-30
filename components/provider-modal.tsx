@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -14,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 import { providerApi, type Provider, type ProviderSaveParams } from "@/lib/provider-api"
 import { useToast } from "@/hooks/use-toast"
@@ -53,7 +51,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
   // 获取供应商详情
   useEffect(() => {
     if (open && providerId && !isCreate) {
-      fetchProviderDetail()
+      fetchProviderDetail().then(() => {})
     } else if (open && isCreate) {
       // 重置表单数据
       setFormData({
