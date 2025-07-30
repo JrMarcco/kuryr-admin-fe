@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,26 +17,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { CustomPagination } from "@/components/pagination"
+import { Pagination } from "@/components/pagination"
 import { ProviderModal } from "@/components/provider-modal"
 import { Eye, Power, Trash2, Plus, Search, Loader2 } from "lucide-react"
-import { providerApi, type Provider, type ProviderListParams } from "@/lib/provider-api"
+import { providerApi, type Provider, type ProviderListRequest } from "@/lib/provider-api"
 import { useToast } from "@/hooks/use-toast"
 
 export default function ProvidersPage() {
+
   const { toast } = useToast()
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(false)
-  const [total, setTotal] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const [pageSize] = useState(10)
 
   // 搜索条件
-  const [searchParams, setSearchParams] = useState<ProviderListParams>({
+  const [searchParams, setSearchParams] = useState<ProviderListRequest>({
+    offset: 0,
+    limit: 20,
     provider_name: "",
-    channel: "",
+    channel: ""
   })
 
   // 模态框状态
@@ -58,9 +63,10 @@ export default function ProvidersPage() {
   const fetchProviders = async (page = currentPage) => {
     setLoading(true)
     try {
-      const params: ProviderListParams = {
-        page,
-        page_size: pageSize,
+      const offset = (page - 1) * pageSize
+      const params: ProviderListRequest = {
+        offset: offset,
+        limit: pageSize,
         ...searchParams,
       }
 
@@ -70,9 +76,9 @@ export default function ProvidersPage() {
 
       const response = await providerApi.getList(params)
       if (response.code === 200 && response.data) {
-        setProviders(response.data.list || [])
-        setTotal(response.data.total || 0)
-        setCurrentPage(response.data.page || 1)
+        setProviders(response.data.content || [])
+        setTotalCount(response.data.total)
+        setTotalPages(Math.ceil(response.data.total / pageSize))
       } else {
         toast({
           title: "获取供应商列表失败",
@@ -92,31 +98,33 @@ export default function ProvidersPage() {
   }
 
   useEffect(() => {
-    fetchProviders(1)
+    fetchProviders(1).then(() => {})
   }, [])
 
   // 搜索
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchProviders(1)
+    fetchProviders(1).then(() => {})
   }
 
   // 重置搜索
   const handleReset = () => {
     setSearchParams({
+      offset: 0,
+      limit: 20,
       provider_name: "",
       channel: "",
     })
     setCurrentPage(1)
     setTimeout(() => {
-      fetchProviders(1)
+      fetchProviders(1).then(() => {})
     }, 0)
   }
 
   // 分页
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    fetchProviders(page)
+    fetchProviders(page).then(() => {})
   }
 
   // 查看详情
@@ -160,7 +168,7 @@ export default function ProvidersPage() {
             title: "删除成功",
             description: "供应商已删除",
           })
-          fetchProviders()
+          fetchProviders().then(() => {})
         } else {
           toast({
             title: "删除失败",
@@ -203,18 +211,20 @@ export default function ProvidersPage() {
   }
 
   const getChannelBadge = (channel: 1 | 2) => {
-    return <Badge variant={channel === 1 ? "default" : "secondary"}>{getChannelText(channel)}</Badge>
+    const variant: "default" | "secondary" = channel === 1 ? "default" : "secondary";
+    return <Badge variant={variant}>{getChannelText(channel)}</Badge>
   }
 
   const getStatusBadge = (status: "active" | "inactive") => {
+    const variant: "default" | "secondary" = status === "active" ? "default" : "secondary";
     return (
-      <Badge variant={status === "active" ? "default" : "secondary"}>{status === "active" ? "启用" : "禁用"}</Badge>
+      <Badge variant={variant}>{status === "active" ? "启用" : "禁用"}</Badge>
     )
   }
 
   return (
     <div className="w-full p-6 space-y-6">
-      <Breadcrumb items={breadcrumbItems} />
+      <Breadcrumb items={breadcrumbItems}/>
 
       <Card>
         <CardHeader>
@@ -235,13 +245,16 @@ export default function ProvidersPage() {
             <div className="min-w-[150px]">
               <label className="text-sm font-medium mb-2 block">渠道</label>
               <Select
-                value={searchParams.channel?.toString() || "all"}
+                value={searchParams.channel ? String(searchParams.channel) : "all"}
                 onValueChange={(value) =>
-                  setSearchParams({ ...searchParams, channel: value ? (Number.parseInt(value) as 1 | 2) : "" })
+                  setSearchParams({
+                    ...searchParams,
+                    channel: value === "all" ? "" : (Number.parseInt(value) as 1 | 2)
+                  })
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="选择渠道" />
+                  <SelectValue placeholder="选择渠道"/>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部</SelectItem>
@@ -252,7 +265,7 @@ export default function ProvidersPage() {
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSearch} disabled={loading}>
-                <Search className="w-4 h-4 mr-2" />
+                <Search className="w-4 h-4 mr-2"/>
                 搜索
               </Button>
               <Button variant="outline" onClick={handleReset} disabled={loading}>
@@ -263,9 +276,11 @@ export default function ProvidersPage() {
 
           {/* 操作区域 */}
           <div className="flex justify-between items-center">
-            <div className="text-sm text-muted-foreground">共 {total} 条记录</div>
+            <div className="text-sm text-muted-foreground">
+              共 {totalCount} 条记录，当前第 {currentPage} 页
+            </div>
             <Button onClick={handleCreate}>
-              <Plus className="w-4 h-4 mr-2" />
+              <Plus className="w-4 h-4 mr-2"/>
               新增供应商
             </Button>
           </div>
@@ -290,7 +305,7 @@ export default function ProvidersPage() {
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto"/>
                       <div className="mt-2">加载中...</div>
                     </TableCell>
                   </TableRow>
@@ -318,7 +333,7 @@ export default function ProvidersPage() {
                       <TableCell>
                         <div className="flex gap-1">
                           <Button variant="ghost" size="sm" onClick={() => handleView(provider)} title="查看详情">
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4"/>
                           </Button>
                           <Button
                             variant="ghost"
@@ -326,10 +341,10 @@ export default function ProvidersPage() {
                             onClick={() => handleToggleStatus(provider)}
                             title={provider.active_status === "active" ? "禁用" : "启用"}
                           >
-                            <Power className="h-4 w-4" />
+                            <Power className="h-4 w-4"/>
                           </Button>
                           <Button variant="ghost" size="sm" onClick={() => handleDelete(provider)} title="删除">
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4"/>
                           </Button>
                         </div>
                       </TableCell>
@@ -341,8 +356,20 @@ export default function ProvidersPage() {
           </div>
 
           {/* 分页 */}
-          {total > 0 && (
-            <CustomPagination current={currentPage} total={total} pageSize={pageSize} onChange={handlePageChange} />
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={totalCount}
+                onPageChange={handlePageChange}
+                onPageSizeChange={(newPageSize) => {
+                  // Handle page size change if needed
+                  console.log("Page size changed to:", newPageSize)
+                }}
+              />
+            </div>
           )}
         </CardContent>
       </Card>
@@ -374,7 +401,7 @@ export default function ProvidersPage() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={actionLoading}>取消</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmAction} disabled={actionLoading}>
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
               确认
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -21,7 +21,7 @@ interface BizConfigModalProps {
   businessName: string
 }
 
-export function BizConfigModal({isOpen, onClose, businessId, businessName}: BizConfigModalProps) {
+export function BizConfigModal({ isOpen, onClose, businessId, businessName }: BizConfigModalProps) {
   const [config, setConfig] = useState<BizConfig | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [hasData, setHasData] = useState(false)
@@ -79,7 +79,7 @@ export function BizConfigModal({isOpen, onClose, businessId, businessName}: BizC
   const fetchConfig = async () => {
     if (!businessId) return
 
-    const response = await executeGetConfig({biz_id: businessId})
+    const response = await executeGetConfig({ biz_id: businessId })
 
     if (response.code === 200 && response.data) {
       setConfig(response.data)
@@ -196,11 +196,11 @@ export function BizConfigModal({isOpen, onClose, businessId, businessName}: BizC
   const updateFormData = (path: string, value: any) => {
     setFormData((prev) => {
       const keys = path.split(".")
-      const newData = {...prev}
+      const newData = { ...prev }
       let current: any = newData
 
       for (let i = 0; i < keys.length - 1; i++) {
-        current[keys[i]] = {...current[keys[i]]}
+        current[keys[i]] = { ...current[keys[i]] }
         current = current[keys[i]]
       }
 
@@ -228,7 +228,7 @@ export function BizConfigModal({isOpen, onClose, businessId, businessName}: BizC
   // 更新渠道项
   const updateChannel = (index: number, field: keyof ChannelItem, value: any) => {
     const newChannels = [...formData.channel_config.channels]
-    newChannels[index] = {...newChannels[index], [field]: value}
+    newChannels[index] = { ...newChannels[index], [field]: value }
     updateFormData("channel_config.channels", newChannels)
   }
 

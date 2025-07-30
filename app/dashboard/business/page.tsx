@@ -238,7 +238,7 @@ export default function BusinessPage() {
           <CardHeader>
             <CardTitle className="text-white">业务方列表</CardTitle>
             <CardDescription className="text-gray-400">
-              共 {totalCount} 个业务方，当前第 {currentPage} 页
+              共 {totalCount} 条记录，当前第 {currentPage} 页
             </CardDescription>
           </CardHeader>
           <CardContent>
