@@ -1,5 +1,6 @@
 "use client"
 
+import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -198,49 +199,46 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{getTitle()}</DialogTitle>
-          <DialogDescription>
-            {mode === "view" && "查看供应商的详细信息"}
-            {mode === "create" && "填写供应商信息并保存"}
-            {mode === "edit" && "修改供应商信息并保存"}
-          </DialogDescription>
+          <DialogTitle className="text-white">{getTitle()}</DialogTitle>
         </DialogHeader>
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            <Loader2 className="h-8 w-8 animate-spin"/>
             <span className="ml-2">加载中...</span>
           </div>
         ) : (
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="provider_name">供应商名称 *</Label>
+                <Label htmlFor="provider_name" className="text-gray-300">供应商名称 *</Label>
                 <Input
                   id="provider_name"
                   value={formData.provider_name || ""}
                   onChange={(e) => setFormData({ ...formData, provider_name: e.target.value })}
                   disabled={isReadOnly}
                   placeholder="请输入供应商名称"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="channel">渠道 *</Label>
+                <Label htmlFor="channel" className="text-gray-300">渠道 *</Label>
                 {isReadOnly ? (
-                  <Input value={getChannelText(formData.channel!)} disabled />
+                  <Input value={getChannelText(formData.channel!)} disabled
+                         className="bg-gray-800 border-gray-700 text-white"/>
                 ) : (
                   <Select
                     value={formData.channel?.toString()}
                     onValueChange={(value) => setFormData({ ...formData, channel: Number.parseInt(value) as 1 | 2 })}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择渠道" />
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                      <SelectValue placeholder="选择渠道"/>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">短信</SelectItem>
-                      <SelectItem value="2">邮件</SelectItem>
+                    <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectItem value="1" className="text-white hover:bg-gray-700">短信</SelectItem>
+                      <SelectItem value="2" className="text-white hover:bg-gray-700">邮件</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -249,7 +247,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="weight">权重</Label>
+                <Label htmlFor="weight" className="text-gray-300">权重</Label>
                 <Input
                   id="weight"
                   type="number"
@@ -258,10 +256,11 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                   onChange={(e) => setFormData({ ...formData, weight: Number.parseInt(e.target.value) || 1 })}
                   disabled={isReadOnly}
                   placeholder="权重"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="qps_limit">QPS限流</Label>
+                <Label htmlFor="qps_limit" className="text-gray-300">QPS限流</Label>
                 <Input
                   id="qps_limit"
                   type="number"
@@ -270,10 +269,11 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                   onChange={(e) => setFormData({ ...formData, qps_limit: Number.parseInt(e.target.value) || 100 })}
                   disabled={isReadOnly}
                   placeholder="QPS限流"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="daily_limit">每日限流</Label>
+                <Label htmlFor="daily_limit" className="text-gray-300">每日限流</Label>
                 <Input
                   id="daily_limit"
                   type="number"
@@ -282,15 +282,17 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                   onChange={(e) => setFormData({ ...formData, daily_limit: Number.parseInt(e.target.value) || 10000 })}
                   disabled={isReadOnly}
                   placeholder="每日限流"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="active_status">状态</Label>
+                <Label htmlFor="active_status" className="text-gray-300">状态</Label>
                 {isReadOnly ? (
-                  <Input value={getStatusText(formData.active_status!)} disabled />
+                  <Input value={getStatusText(formData.active_status!)} disabled
+                         className="bg-gray-800 border-gray-700 text-white"/>
                 ) : (
                   <Select
                     value={formData.active_status}
@@ -298,64 +300,68 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                       setFormData({ ...formData, active_status: value as "active" | "inactive" })
                     }
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择状态" />
+                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                      <SelectValue placeholder="选择状态"/>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">启用</SelectItem>
-                      <SelectItem value="inactive">禁用</SelectItem>
+                    <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectItem value="active" className="text-white hover:bg-gray-700">启用</SelectItem>
+                      <SelectItem value="inactive" className="text-white hover:bg-gray-700">禁用</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="region_id">区域ID</Label>
+                <Label htmlFor="region_id" className="text-gray-300">区域 ID</Label>
                 <Input
                   id="region_id"
                   value={formData.region_id || ""}
                   onChange={(e) => setFormData({ ...formData, region_id: e.target.value })}
                   disabled={isReadOnly}
                   placeholder="区域ID"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endpoint">接口地址 *</Label>
+              <Label htmlFor="endpoint" className="text-gray-300">接口地址 *</Label>
               <Input
                 id="endpoint"
                 value={formData.endpoint || ""}
                 onChange={(e) => setFormData({ ...formData, endpoint: e.target.value })}
                 disabled={isReadOnly}
                 placeholder="请输入接口地址"
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="app_id">应用ID</Label>
+                <Label htmlFor="app_id" className="text-gray-300">应用 ID</Label>
                 <Input
                   id="app_id"
                   value={formData.app_id || ""}
                   onChange={(e) => setFormData({ ...formData, app_id: e.target.value })}
                   disabled={isReadOnly}
                   placeholder="应用ID"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="api_key">接口Key *</Label>
+                <Label htmlFor="api_key" className="text-gray-300">接口 Key *</Label>
                 <Input
                   id="api_key"
                   value={formData.api_key || ""}
                   onChange={(e) => setFormData({ ...formData, api_key: e.target.value })}
                   disabled={isReadOnly}
                   placeholder="请输入接口Key"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="api_secret">接口Secret *</Label>
+              <Label htmlFor="api_secret" className="text-gray-300">接口 Secret *</Label>
               <div className="relative">
                 <Input
                   id="api_secret"
@@ -364,42 +370,45 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                   onChange={(e) => setFormData({ ...formData, api_secret: e.target.value })}
                   disabled={isReadOnly}
                   placeholder="请输入接口Secret"
-                  className="pr-10"
+                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 pr-10"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-gray-700 text-gray-400"
                   onClick={() => setShowApiSecret(!showApiSecret)}
                   disabled={isReadOnly}
                 >
-                  {showApiSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showApiSecret ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="audit_callback_url">回调地址</Label>
-              <Textarea
-                id="audit_callback_url"
+              <Label htmlFor="audit_callback_url" className="text-gray-300">回调地址</Label>
+              <Input
+                id="api_secret"
+                type={showApiSecret ? "text" : "password"}
                 value={formData.audit_callback_url || ""}
                 onChange={(e) => setFormData({ ...formData, audit_callback_url: e.target.value })}
                 disabled={isReadOnly}
-                placeholder="回调地址"
-                rows={3}
+                placeholder="请输入回调地址"
+                className="bg-gray-800 border-gray-700 text-white placeholder-gray-400 pr-10"
               />
             </div>
           </div>
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800">
             {isReadOnly ? "关闭" : "取消"}
           </Button>
           {!isReadOnly && (
-            <Button onClick={handleSave} disabled={saving || loading}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button onClick={handleSave} disabled={saving || loading}
+                    className="bg-orange-600 hover:bg-orange-700 text-white">
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
               保存
             </Button>
           )}

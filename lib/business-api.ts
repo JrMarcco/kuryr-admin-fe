@@ -26,9 +26,10 @@ interface BusinessListResponse {
   content: Business[]
 }
 
-interface BusinessListRequest {
+export interface BusinessListRequest {
   offset: number
   limit: number
+  biz_name?: string
 }
 
 export interface CreateBusinessRequest {
@@ -46,7 +47,16 @@ interface UpdateBusinessRequest extends CreateBusinessRequest {
 export const businessApi = {
   // 获取业务方列表（分页）
   async getBusinessList(params: BusinessListRequest): Promise<ApiResponse<BusinessListResponse>> {
-    return api.get<BusinessListResponse>(`/v1/biz/list?offset=${params.offset}&limit=${params.limit}`)
+    const searchParams = new URLSearchParams({
+      offset: params.offset.toString(),
+      limit: params.limit.toString(),
+    })
+    
+    if (params.biz_name) {
+      searchParams.append('biz_name', params.biz_name)
+    }
+    
+    return api.get<BusinessListResponse>(`/v1/biz/list?${searchParams.toString()}`)
   },
 
   // 创建业务方

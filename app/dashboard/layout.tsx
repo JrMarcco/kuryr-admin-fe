@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+
 import { LayoutDashboard, Building2, LogOut, Menu, X, ChevronDown, ChevronRight, Loader2, Truck } from "lucide-react"
 import { authApi } from "@/lib/auth-api"
 
@@ -104,14 +104,14 @@ export default function DashboardLayout({
         <div key={item.label} className="space-y-1">
           <button
             onClick={() => toggleExpanded(item.label)}
-            className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
               hasActiveChildren
-                ? "bg-orange-900/50 text-orange-300"
-                : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                ? "bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg transform scale-105"
+                : "text-gray-300 hover:bg-gradient-to-r hover:from-gray-600 hover:to-gray-500 hover:text-white hover:shadow-md hover:scale-105"
             }`}
           >
             <div className="flex items-center">
-              <item.icon className="mr-3 h-5 w-5" />
+              <item.icon className={`mr-3 h-5 w-5 ${hasActiveChildren ? 'text-white' : ''}`} />
               {item.label}
             </div>
             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -127,16 +127,16 @@ export default function DashboardLayout({
       <Link
         key={item.label}
         href={item.href!}
-        className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+        className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 transform ${
           isItemActive
-            ? "bg-orange-600 text-white"
+            ? "bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg scale-105 border border-orange-400/30"
             : level > 0
-              ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-              : "text-gray-300 hover:bg-gray-800 hover:text-white"
+              ? "text-gray-400 hover:bg-gradient-to-r hover:from-gray-600 hover:to-gray-500 hover:text-white hover:shadow-md hover:scale-105"
+              : "text-gray-300 hover:bg-gradient-to-r hover:from-gray-600 hover:to-gray-500 hover:text-white hover:shadow-md hover:scale-105"
         }`}
         onClick={() => setSidebarOpen(false)}
       >
-        <item.icon className="mr-3 h-5 w-5" />
+        <item.icon className={`mr-3 h-5 w-5 ${isItemActive ? 'text-white' : ''}`} />
         {item.label}
       </Link>
     )
@@ -147,67 +147,67 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-black">
+    <div className="flex h-screen bg-gradient-to-br from-gray-900 to-gray-800">
       {/* 侧边栏 */}
       <div
         className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-900 transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-gray-800 to-gray-900 border-r border-gray-700 transform transition-transform duration-300 ease-in-out shadow-2xl
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0 lg:static lg:inset-0
       `}
       >
         <div className="flex flex-col h-full">
           {/* Logo section */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-900">
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-gray-600">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">K</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                <span className="text-white font-bold text-lg">K</span>
               </div>
-              <span className="text-xl font-bold text-white">Kuryr</span>
+              <div>
+                <span className="text-xl font-bold text-white">Kuryr</span>
+              </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-gray-400 hover:text-white"
+              className="lg:hidden text-gray-400 hover:text-white hover:bg-gray-600 rounded-lg"
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
 
           {/* Navigation - takes remaining space */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <nav className="flex-1 px-4 py-6 space-y-3 overflow-y-auto">
             {sidebarItems.map((item) => renderSidebarItem(item))}
           </nav>
 
           {/* User info - stays at the bottom */}
-          <div className="border-t border-gray-900 p-4">
-            <Card className="bg-gray-900 border-gray-800">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">{getUserInitial(username)}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white" title={username}>
-                        {username}
-                      </p>
-                    </div>
+          <div className="border-t border-gray-700 p-4">
+            <div className="bg-gradient-to-r from-gray-700 to-gray-600 border border-gray-600 rounded-xl shadow-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-orange-400/30">
+                    <span className="text-white text-sm font-bold">{getUserInitial(username)}</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
-                    title="登出"
-                  >
-                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-                  </Button>
+                  <div>
+                    <p className="text-sm font-semibold text-white" title={username}>
+                      {username}
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="text-gray-300 hover:text-red-400 hover:bg-red-600/20 p-2 rounded-xl transition-all duration-200 hover:scale-105"
+                  title="登出"
+                >
+                  {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -215,12 +215,12 @@ export default function DashboardLayout({
       {/* 主内容区域 */}
       <div className="flex-1 flex flex-col lg:ml-0">
         {/* 顶部导航栏 */}
-        <header className="h-16 bg-black border-b border-gray-900 flex items-center justify-between px-4 lg:px-6">
+        <header className="h-16 bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 flex items-center justify-between px-4 lg:px-6 shadow-lg">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden text-gray-300 hover:text-white hover:bg-gray-600 rounded-xl transition-all duration-200 hover:scale-105"
           >
             <Menu className="h-5 w-5" />
           </Button>

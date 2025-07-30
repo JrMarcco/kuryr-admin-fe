@@ -65,7 +65,7 @@ export const configApi = {
     const queryParams = new URLSearchParams({
       biz_id: params.biz_id,
     })
-    return api.get<BizConfig>(`/v1/biz_config/get?${queryParams.toString()}`)
+    return api.get<BizConfig>(`/v1/biz_config/find?${queryParams.toString()}`)
   },
 
   // 创建或更新业务方配置
