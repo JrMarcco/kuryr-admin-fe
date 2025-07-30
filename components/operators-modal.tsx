@@ -1,148 +1,105 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState, useEffect, useCallback } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
-import { businessApi } from "@/lib/business-api"
-import { formatTimestamp } from "@/lib/utils"
+import { businessApi, type Operator, type Business } from "@/lib/business-api"
 import { useToast } from "@/hooks/use-toast"
-
-interface Operator {
-  id: number
-  operator_name: string
-  operator_email: string
-  operator_phone: string
-  role: string
-  status: "active" | "inactive"
-  created_at: string
-  updated_at: string
-}
 
 interface OperatorsModalProps {
   isOpen: boolean
   onClose: () => void
-  businessId: number
-  businessName: string
+  business: Business
 }
 
-export function OperatorsModal({ isOpen, onClose, businessId, businessName }: OperatorsModalProps) {
-  const { toast } = useToast()
+export default function OperatorsModal({ isOpen, onClose, business }: OperatorsModalProps) {
   const [operators, setOperators] = useState<Operator[]>([])
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
 
-  useEffect(() => {
-    if (isOpen && businessId) {
-      fetchOperators()
-    }
-  }, [isOpen, businessId])
-
-  const fetchOperators = async () => {
-    setLoading(true)
+  const fetchOperators = useCallback(async () => {
+    if (!business) return
+    setIsLoading(true)
     try {
-      // 模拟API调用
-      const response = await businessApi.getOperators(businessId)
-      if (response.code === 200 && response.data) {
-        setOperators(response.data)
-      } else {
-        toast({
-          title: "获取操作员列表失败",
-          description: response.msg || "请稍后重试",
-          variant: "destructive",
-        })
-      }
+      const data = await businessApi.getOperators(business.id)
+      setOperators(data)
     } catch (error) {
+      console.error("Failed to fetch operators:", error)
       toast({
         title: "获取操作员列表失败",
-        description: "网络错误，请稍后重试",
         variant: "destructive",
       })
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
-  }
+  }, [business, toast])
 
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "admin":
-        return <Badge>管理员</Badge>
-      case "operator":
-        return <Badge variant="secondary">操作员</Badge>
-      case "viewer":
-        return <Badge variant="outline">查看者</Badge>
-      default:
-        return <Badge variant="outline">{role}</Badge>
+  useEffect(() => {
+    if (isOpen) {
+      fetchOperators()
     }
-  }
-
-  const getStatusBadge = (status: "active" | "inactive") => {
-    return (
-      <Badge variant={status === "active" ? "default" : "secondary"}>{status === "active" ? "启用" : "禁用"}</Badge>
-    )
-  }
+  }, [isOpen, fetchOperators])
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white">{businessName} - 操作员列表</DialogTitle>
+          <DialogTitle>操作员列表 - {business.name}</DialogTitle>
+          <DialogDescription>以下是与此业务关联的所有操作员。</DialogDescription>
         </DialogHeader>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">加载中...</span>
-          </div>
-        ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
+        <div className="mt-4 max-h-[60vh] overflow-y-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>用户名</TableHead>
+                <TableHead>角色</TableHead>
+                <TableHead>状态</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>操作员名称</TableHead>
-                  <TableHead>邮箱</TableHead>
-                  <TableHead>电话</TableHead>
-                  <TableHead>角色</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead>创建时间</TableHead>
+                  <TableCell colSpan={4} className="text-center">
+                    <div className="flex justify-center items-center p-4">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {operators.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      暂无操作员数据
+              ) : operators.length > 0 ? (
+                operators.map((op) => (
+                  <TableRow key={op.id}>
+                    <TableCell>{op.id}</TableCell>
+                    <TableCell>{op.username}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{op.role}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={op.status === 1 ? "default" : "destructive"}
+                        className={
+                          op.status === 1
+                            ? "bg-green-500/20 text-green-400 border-green-500/30"
+                            : "bg-red-500/20 text-red-400 border-red-500/30"
+                        }
+                      >
+                        {op.status === 1 ? "正常" : "禁用"}
+                      </Badge>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  operators.map((operator) => (
-                    <TableRow key={operator.id}>
-                      <TableCell className="font-mono text-xs">{operator.id}</TableCell>
-                      <TableCell>{operator.operator_name}</TableCell>
-                      <TableCell>{operator.operator_email}</TableCell>
-                      <TableCell>{operator.operator_phone}</TableCell>
-                      <TableCell>{getRoleBadge(operator.role)}</TableCell>
-                      <TableCell>{getStatusBadge(operator.status)}</TableCell>
-                      <TableCell className="text-xs">{formatTimestamp(operator.created_at).split(" ")[0]}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
-          >
-            关闭
-          </Button>
-        </DialogFooter>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    暂无操作员
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </DialogContent>
     </Dialog>
   )
