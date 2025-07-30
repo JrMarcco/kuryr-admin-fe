@@ -38,14 +38,8 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     icon: Building2,
-    label: "业务管理",
-    children: [
-      {
-        icon: Building2,
-        label: "业务方信息",
-        href: "/dashboard/business",
-      },
-    ],
+    label: "业务方管理",
+    href: "/dashboard/business",
   },
   {
     icon: Truck,
@@ -77,7 +71,7 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<string[]>(["业务方管理"])
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [username, setUsername] = useState<string>("Admin") // 添加用户名状态
 

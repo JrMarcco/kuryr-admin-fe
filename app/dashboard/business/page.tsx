@@ -1,21 +1,13 @@
 "use client"
-
-import * as React from "react";
-
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Loader2, Settings, Users, Plus } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Loader2, Settings, Users, Plus, Search } from "lucide-react"
 import { businessApi, type Business } from "@/lib/business-api"
 import { formatTimestamp } from "@/lib/utils"
 import { useApi } from "@/hooks/use-api"
@@ -23,6 +15,8 @@ import { Pagination } from "@/components/pagination"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { OperatorsModal } from "@/components/operators-modal"
 import { BizConfigModal } from "@/components/biz-config-modal"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useToast } from "@/hooks/use-toast"
 
 interface CreateBusinessForm {
   biz_key: string
@@ -33,6 +27,7 @@ interface CreateBusinessForm {
 }
 
 export default function BusinessPage() {
+  const { toast } = useToast()
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -41,6 +36,8 @@ export default function BusinessPage() {
   const [isOperatorsModalOpen, setIsOperatorsModalOpen] = useState(false)
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [searchName, setSearchName] = useState("")
+  const [searchType, setSearchType] = useState<"all" | "individual" | "organization">("all")
   const [createForm, setCreateForm] = useState<CreateBusinessForm>({
     biz_key: "",
     biz_name: "",
@@ -55,10 +52,20 @@ export default function BusinessPage() {
 
   const fetchBusinesses = async (page: number) => {
     const offset = (page - 1) * pageSize
-    const response = await execute({
+    const params: any = {
       offset,
       limit: pageSize,
-    })
+    }
+
+    // 添加搜索条件
+    if (searchName) {
+      params.biz_name = searchName
+    }
+    if (searchType !== "all") {
+      params.biz_type = searchType
+    }
+
+    const response = await execute(params)
 
     if (response.code === 200 && response.data) {
       setBusinesses(response.data.content)
@@ -86,9 +93,30 @@ export default function BusinessPage() {
   }
 
   const handleCreateBusiness = async () => {
+    // 表单验证
+    if (!createForm.biz_key?.trim()) {
+      toast({
+        title: "请输入业务Key",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!createForm.biz_name?.trim()) {
+      toast({
+        title: "请输入业务名称",
+        variant: "destructive",
+      })
+      return
+    }
+
     const response = await executeCreate(createForm)
 
     if (response.code === 200) {
+      toast({
+        title: "创建成功",
+        description: "业务方创建成功",
+      })
       setIsCreateModalOpen(false)
       setCreateForm({
         biz_key: "",
@@ -99,268 +127,288 @@ export default function BusinessPage() {
       })
       // 重新加载业务方列表
       fetchBusinesses(currentPage).then(() => {})
+    } else {
+      toast({
+        title: "创建失败",
+        description: response.msg || "请稍后重试",
+        variant: "destructive",
+      })
     }
   }
 
+  const handleSearch = () => {
+    setCurrentPage(1)
+    fetchBusinesses(1).then(() => {})
+  }
+
+  const handleReset = () => {
+    setSearchName("")
+    setSearchType("all")
+    setCurrentPage(1)
+    setTimeout(() => {
+      fetchBusinesses(1).then(() => {})
+    }, 0)
+  }
+
   const breadcrumbItems = [
-    { label: "首页", href: "/dashboard" },
+    { label: "仪表板", href: "/dashboard" },
     { label: "业务方管理", href: "/dashboard/business" },
   ]
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="w-full space-y-6">
-        <Breadcrumb items={breadcrumbItems}/>
+    <div className="w-full p-6 space-y-6">
+      <Breadcrumb items={breadcrumbItems} />
 
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white">业务管理</h1>
-          </div>
-          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                <Plus className="mr-2 h-4 w-4"/>
-                新增业务
+      <Card>
+        <CardHeader>
+          <CardTitle>业务方管理</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* 搜索区域 */}
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-sm font-medium mb-2 block">业务方名称</label>
+              <Input
+                placeholder="请输入业务方名称"
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              />
+            </div>
+            <div className="min-w-[150px]">
+              <label className="text-sm font-medium mb-2 block">业务类型</label>
+              <Select
+                value={searchType}
+                onValueChange={(value) => setSearchType(value as "all" | "individual" | "organization")}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="individual">个人</SelectItem>
+                  <SelectItem value="organization">组织</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handleSearch} disabled={loading}>
+                <Search className="w-4 h-4 mr-2" />
+                搜索
               </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-black border-gray-900 text-white">
-              <DialogHeader>
-                <DialogTitle className="text-white">新增业务</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="biz_type" className="text-gray-300">
-                    业务类型
-                  </Label>
-                  <select
-                    id="biz_type"
-                    value={createForm.biz_type}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({ ...prev, biz_type: e.target.value as "individual" | "organization" }))
-                    }
-                    className="w-full bg-gray-900 border border-gray-800 rounded px-3 py-2 text-white"
-                  >
-                    <option value="individual">个人</option>
-                    <option value="organization">组织</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="biz_key" className="text-gray-300">
-                    业务Key
-                  </Label>
-                  <Input
-                    id="biz_key"
-                    value={createForm.biz_key}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_key: e.target.value }))}
-                    className="bg-gray-900 border-gray-800 text-white"
-                    placeholder="请输入业务Key"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="biz_name" className="text-gray-300">
-                    业务名
-                  </Label>
-                  <Input
-                    id="biz_name"
-                    value={createForm.biz_name}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_name: e.target.value }))}
-                    className="bg-gray-900 border-gray-800 text-white"
-                    placeholder="请输入业务名"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact" className="text-gray-300">
-                    联系人
-                  </Label>
-                  <Input
-                    id="contact"
-                    value={createForm.contact}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contact: e.target.value }))}
-                    className="bg-gray-900 border-gray-800 text-white"
-                    placeholder="请输入联系人"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact_email" className="text-gray-300">
-                    联系人邮箱
-                  </Label>
-                  <Input
-                    id="contact_email"
-                    type="email"
-                    value={createForm.contact_email}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contact_email: e.target.value }))}
-                    className="bg-gray-900 border-gray-800 text-white"
-                    placeholder="请输入联系人邮箱"
-                  />
-                </div>
-                {createError && (
-                  <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
-                    <p className="text-red-300 text-sm">创建失败: {createError}</p>
-                  </div>
-                )}
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="border-gray-800 text-gray-300 hover:bg-gray-900 bg-black"
-                  >
-                    取消
-                  </Button>
-                  <Button
-                    onClick={handleCreateBusiness}
-                    disabled={createLoading}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                  >
-                    {createLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                        创建中...
-                      </>
-                    ) : (
-                      "创建"
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+              <Button variant="outline" onClick={handleReset} disabled={loading}>
+                重置
+              </Button>
+            </div>
+          </div>
 
-        {error && (
-          <Card className="bg-red-900/50 border-red-800">
-            <CardContent className="p-4">
-              <p className="text-red-300">{error}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card className="bg-gray-900 border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-white">业务方列表</CardTitle>
-            <CardDescription className="text-gray-400">
+          {/* 操作区域 */}
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
               共 {totalCount} 条记录，当前第 {currentPage} 页
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2"/>
-                <span className="text-gray-400">加载中...</span>
-              </div>
-            ) : (
-              <>
-                <div className="w-full">
-                  <table className="w-full table-fixed">
-                    <thead>
-                    <tr className="border-b border-gray-800">
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[8%]">ID</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[12%]">业务名</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[8%]">类型</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">联系人</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">联系人邮箱</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">业务 Key</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">业务密钥</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">创建时间</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[10%]">更新时间</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[6%]">操作员</th>
-                      <th className="text-left py-3 px-2 text-gray-300 font-medium w-[6%]">配置</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {businesses.map((business) => (
-                      <tr key={business.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                        <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.created_at)}>
-                          {business.id}
-                        </td>
-                        <td className="py-3 px-2 text-white truncate" title={business.biz_name}>
-                          {business.biz_name}
-                        </td>
-                        <td className="py-3 px-2">
-                          <Badge
-                            variant="secondary"
-                            className={
-                              business.biz_type === "organization"
-                                ? "bg-blue-600/20 text-blue-400 border-blue-600/30 text-xs"
-                                : "bg-purple-600/20 text-purple-400 border-purple-600/30 text-xs"
-                            }
-                          >
-                            {business.biz_type === "organization" ? "组织" : "个人"}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-2 text-gray-300 truncate" title={business.contact}>
-                          {business.contact}
-                        </td>
-                        <td className="py-3 px-2 text-gray-300 truncate" title={business.contact_email}>
-                          {business.contact_email}
-                        </td>
-                        <td className="py-3 px-2">
-                          <Badge
-                            variant="secondary"
-                            className="bg-gray-900 text-gray-300 border-gray-800 text-xs truncate max-w-full"
-                            title={business.biz_key}
-                          >
-                            {business.biz_key}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-2">
-                          <div className="flex items-center space-x-1">
-                              <span className="font-mono text-xs text-gray-300 truncate flex-1">
-                                {business.biz_secret}
-                              </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.created_at)}>
-                          {formatTimestamp(business.updated_at).split(" ")[0]}
-                        </td>
-                        <td className="py-3 px-2 text-gray-300 text-xs" title={formatTimestamp(business.updated_at)}>
-                          {formatTimestamp(business.updated_at).split(" ")[0]}
-                        </td>
-                        <td className="py-3 px-2">
-                          <Button
-                            onClick={() => handleViewOperators(business)}
-                            size="sm"
-                            variant="outline"
-                            className="border-gray-700 text-gray-300 hover:bg-gray-800 bg-black h-7 px-2 text-xs"
-                          >
-                            <Users className="h-3 w-3"/>
-                          </Button>
-                        </td>
-                        <td className="py-3 px-2">
-                          <Button
-                            onClick={() => handleViewConfig(business)}
-                            size="sm"
-                            variant="outline"
-                            className="border-orange-600 text-orange-400 hover:bg-orange-600/10 bg-black h-7 px-2 text-xs"
-                          >
-                            <Settings className="h-3 w-3"/>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                    </tbody>
-                  </table>
-                </div>
+            </div>
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              新增业务方
+            </Button>
+          </div>
 
-                {totalPages > 1 && (
-                  <div className="mt-6">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      pageSize={pageSize}
-                      totalItems={totalCount}
-                      onPageChange={handlePageChange}
-                      onPageSizeChange={(newPageSize) => {
-                        // Handle page size change if needed
-                        console.log("Page size changed to:", newPageSize)
-                      }}
-                    />
-                  </div>
+          {error && (
+            <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* 表格 */}
+          <div className="border rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[8%]">ID</TableHead>
+                  <TableHead className="w-[12%]">业务名称</TableHead>
+                  <TableHead className="w-[8%]">类型</TableHead>
+                  <TableHead className="w-[10%]">联系人</TableHead>
+                  <TableHead className="w-[10%]">联系人邮箱</TableHead>
+                  <TableHead className="w-[10%]">业务 Key</TableHead>
+                  <TableHead className="w-[10%]">业务密钥</TableHead>
+                  <TableHead className="w-[10%]">创建时间</TableHead>
+                  <TableHead className="w-[10%]">更新时间</TableHead>
+                  <TableHead className="w-[12%]">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                      <div className="mt-2">加载中...</div>
+                    </TableCell>
+                  </TableRow>
+                ) : businesses.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                      暂无数据
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  businesses.map((business) => (
+                    <TableRow key={business.id}>
+                      <TableCell className="font-mono text-xs">{business.id}</TableCell>
+                      <TableCell className="font-medium" title={business.biz_name}>
+                        <div className="truncate max-w-[120px]">{business.biz_name}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={business.biz_type === "organization" ? "default" : "secondary"}>
+                          {business.biz_type === "organization" ? "组织" : "个人"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="truncate" title={business.contact}>
+                        {business.contact}
+                      </TableCell>
+                      <TableCell className="truncate" title={business.contact_email}>
+                        {business.contact_email}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="truncate max-w-full" title={business.biz_key}>
+                          {business.biz_key}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="truncate font-mono text-xs" title={business.biz_secret}>
+                          {business.biz_secret}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs" title={formatTimestamp(business.created_at)}>
+                        {formatTimestamp(business.created_at).split(" ")[0]}
+                      </TableCell>
+                      <TableCell className="text-xs" title={formatTimestamp(business.updated_at)}>
+                        {formatTimestamp(business.updated_at).split(" ")[0]}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewOperators(business)}
+                            title="查看操作员"
+                          >
+                            <Users className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleViewConfig(business)} title="查看配置">
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
-              </>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 分页 */}
+          {totalPages > 1 && (
+            <div className="mt-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalItems={totalCount}
+                onPageChange={handlePageChange}
+                onPageSizeChange={(newPageSize) => {
+                  // Handle page size change if needed
+                  console.log("Page size changed to:", newPageSize)
+                }}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 新增业务方模态框 */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>新增业务方</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="biz_type">业务类型</Label>
+              <Select
+                value={createForm.biz_type}
+                onValueChange={(value) =>
+                  setCreateForm((prev) => ({ ...prev, biz_type: value as "individual" | "organization" }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">个人</SelectItem>
+                  <SelectItem value="organization">组织</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="biz_key">业务Key *</Label>
+              <Input
+                id="biz_key"
+                value={createForm.biz_key}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_key: e.target.value }))}
+                placeholder="请输入业务Key"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="biz_name">业务名称 *</Label>
+              <Input
+                id="biz_name"
+                value={createForm.biz_name}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_name: e.target.value }))}
+                placeholder="请输入业务名称"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact">联系人</Label>
+              <Input
+                id="contact"
+                value={createForm.contact}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, contact: e.target.value }))}
+                placeholder="请输入联系人"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact_email">联系人邮箱</Label>
+              <Input
+                id="contact_email"
+                type="email"
+                value={createForm.contact_email}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, contact_email: e.target.value }))}
+                placeholder="请输入联系人邮箱"
+              />
+            </div>
+            {createError && (
+              <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
+                <p className="text-red-300 text-sm">创建失败: {createError}</p>
+              </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleCreateBusiness} disabled={createLoading}>
+              {createLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  创建中...
+                </>
+              ) : (
+                "创建"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* 操作员模态框 */}
       {selectedBusiness && (
