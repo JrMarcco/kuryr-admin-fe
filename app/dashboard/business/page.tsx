@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -76,7 +76,7 @@ export default function BusinessPage() {
     const response = await execute(params)
 
     if (response.code === 200 && response.data) {
-      setBusinesses(response.data.content)
+      setBusinesses(response.data.records)
       setTotalCount(response.data.total)
       setTotalPages(Math.ceil(response.data.total / pageSize))
     }
@@ -85,7 +85,7 @@ export default function BusinessPage() {
   // 搜索
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchBusinesses(1)
+    fetchBusinesses(1).then(() => {})
   }
 
   // 重置搜索
@@ -97,7 +97,7 @@ export default function BusinessPage() {
     })
     setCurrentPage(1)
     setTimeout(() => {
-      fetchBusinesses(1)
+      fetchBusinesses(1).then(() => {})
     }, 0)
   }
 
@@ -163,10 +163,12 @@ export default function BusinessPage() {
                 />
               </div>
               <div className="flex gap-3">
-                <Button onClick={handleReset} disabled={loading} className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-md">
+                <Button onClick={handleReset} disabled={loading}
+                        className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-md">
                   重置
                 </Button>
-                <Button onClick={handleSearch} disabled={loading} className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
+                <Button onClick={handleSearch} disabled={loading}
+                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
                   <Search className="w-4 h-4 mr-2"/>
                   搜索
                 </Button>
@@ -177,118 +179,120 @@ export default function BusinessPage() {
           {/* 操作区域 */}
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-300 font-medium">
-              共 <span className="text-blue-400 font-bold">{totalCount}</span> 条记录，当前第 <span className="text-blue-400 font-bold">{currentPage}</span> 页
+              共 <span className="text-blue-400 font-bold">{totalCount}</span> 条记录，当前第 <span
+              className="text-blue-400 font-bold">{currentPage}</span> 页
             </div>
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
+                <Button
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
                   <Plus className="mr-2 h-4 w-4"/>
                   新增业务
                 </Button>
               </DialogTrigger>
-            <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="text-white">新增业务</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="biz_type" className="text-gray-300">
-                    业务类型
-                  </Label>
-                  <Select
-                    value={createForm.biz_type}
-                    onValueChange={(value) =>
-                      setCreateForm((prev) => ({ ...prev, biz_type: value as "individual" | "organization" }))
-                    }
-                  >
-                    <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                      <SelectValue placeholder="选择业务类型" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-700">
-                      <SelectItem value="individual" className="text-white hover:bg-gray-700">个人</SelectItem>
-                      <SelectItem value="organization" className="text-white hover:bg-gray-700">组织</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="biz_key" className="text-gray-300">
-                    业务Key
-                  </Label>
-                  <Input
-                    id="biz_key"
-                    value={createForm.biz_key}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_key: e.target.value }))}
-                    placeholder="请输入业务Key"
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="biz_name" className="text-gray-300">
-                    业务名
-                  </Label>
-                  <Input
-                    id="biz_name"
-                    value={createForm.biz_name}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_name: e.target.value }))}
-                    placeholder="请输入业务名"
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact" className="text-gray-300">
-                    联系人
-                  </Label>
-                  <Input
-                    id="contact"
-                    value={createForm.contact}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contact: e.target.value }))}
-                    placeholder="请输入联系人"
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contact_email" className="text-gray-300">
-                    联系人邮箱
-                  </Label>
-                  <Input
-                    id="contact_email"
-                    type="email"
-                    value={createForm.contact_email}
-                    onChange={(e) => setCreateForm((prev) => ({ ...prev, contact_email: e.target.value }))}
-                    placeholder="请输入联系人邮箱"
-                    className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                  />
-                </div>
-                {createError && (
-                  <div className="bg-destructive/10 border border-destructive rounded-lg p-3">
-                    <p className="text-destructive text-sm">创建失败: {createError}</p>
+              <DialogContent className="bg-gray-900 border-gray-800 text-white max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-white">新增业务</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="biz_type" className="text-gray-300">
+                      业务类型
+                    </Label>
+                    <Select
+                      value={createForm.biz_type}
+                      onValueChange={(value) =>
+                        setCreateForm((prev) => ({ ...prev, biz_type: value as "individual" | "organization" }))
+                      }
+                    >
+                      <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                        <SelectValue placeholder="选择业务类型"/>
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        <SelectItem value="individual" className="text-white hover:bg-gray-700">个人</SelectItem>
+                        <SelectItem value="organization" className="text-white hover:bg-gray-700">组织</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                  >
-                    取消
-                  </Button>
-                  <Button
-                    onClick={handleCreateBusiness}
-                    disabled={createLoading}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                  >
-                    {createLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
-                        创建中...
-                      </>
-                    ) : (
-                      "创建"
-                    )}
-                  </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="biz_key" className="text-gray-300">
+                      业务Key
+                    </Label>
+                    <Input
+                      id="biz_key"
+                      value={createForm.biz_key}
+                      onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_key: e.target.value }))}
+                      placeholder="请输入业务Key"
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="biz_name" className="text-gray-300">
+                      业务名
+                    </Label>
+                    <Input
+                      id="biz_name"
+                      value={createForm.biz_name}
+                      onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_name: e.target.value }))}
+                      placeholder="请输入业务名"
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact" className="text-gray-300">
+                      联系人
+                    </Label>
+                    <Input
+                      id="contact"
+                      value={createForm.contact}
+                      onChange={(e) => setCreateForm((prev) => ({ ...prev, contact: e.target.value }))}
+                      placeholder="请输入联系人"
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact_email" className="text-gray-300">
+                      联系人邮箱
+                    </Label>
+                    <Input
+                      id="contact_email"
+                      type="email"
+                      value={createForm.contact_email}
+                      onChange={(e) => setCreateForm((prev) => ({ ...prev, contact_email: e.target.value }))}
+                      placeholder="请输入联系人邮箱"
+                      className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
+                    />
+                  </div>
+                  {createError && (
+                    <div className="bg-destructive/10 border border-destructive rounded-lg p-3">
+                      <p className="text-destructive text-sm">创建失败: {createError}</p>
+                    </div>
+                  )}
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsCreateModalOpen(false)}
+                      className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                    >
+                      取消
+                    </Button>
+                    <Button
+                      onClick={handleCreateBusiness}
+                      disabled={createLoading}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      {createLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                          创建中...
+                        </>
+                      ) : (
+                        "创建"
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </DialogContent>
+              </DialogContent>
             </Dialog>
           </div>
 
@@ -341,8 +345,8 @@ export default function BusinessPage() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={business.biz_type === "organization" 
-                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm" 
+                          className={business.biz_type === "organization"
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm"
                             : "bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-sm"}
                         >
                           {business.biz_type === "organization" ? "🏢 组织" : "👤 个人"}

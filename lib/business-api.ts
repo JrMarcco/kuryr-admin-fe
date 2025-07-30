@@ -23,7 +23,7 @@ export interface Business {
 
 interface BusinessListResponse {
   total: number
-  content: Business[]
+  records: Business[]
 }
 
 export interface BusinessListRequest {
@@ -51,12 +51,12 @@ export const businessApi = {
       offset: params.offset.toString(),
       limit: params.limit.toString(),
     })
-    
+
     if (params.biz_name) {
       searchParams.append('biz_name', params.biz_name)
     }
-    
-    return api.get<BusinessListResponse>(`/v1/biz/list?${searchParams.toString()}`)
+
+    return api.get<BusinessListResponse>(`/v1/biz/search?${searchParams.toString()}`)
   },
 
   // 创建业务方

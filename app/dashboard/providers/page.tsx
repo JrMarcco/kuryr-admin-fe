@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Pagination } from "@/components/pagination"
 import { ProviderModal } from "@/components/provider-modal"
-import { Eye, Power, Trash2, Plus, Search, Loader2 } from "lucide-react"
+import { Eye, Trash2, Plus, Search, Loader2 } from "lucide-react"
 import { providerApi, type Provider, type ProviderListRequest } from "@/lib/provider-api"
 import { useToast } from "@/hooks/use-toast"
 
@@ -206,22 +206,6 @@ export default function ProvidersPage() {
       setAlertOpen(false)
       setAlertTarget(undefined)
     }
-  }
-
-  const getChannelText = (channel: 1 | 2) => {
-    return channel === 1 ? "短信" : "邮件"
-  }
-
-  const getChannelBadge = (channel: 1 | 2) => {
-    const variant: "default" | "secondary" = channel === 1 ? "default" : "secondary";
-    return <Badge variant={variant}>{getChannelText(channel)}</Badge>
-  }
-
-  const getStatusBadge = (status: "active" | "inactive") => {
-    const variant: "default" | "secondary" = status === "active" ? "default" : "secondary";
-    return (
-      <Badge variant={variant}>{status === "active" ? "启用" : "禁用"}</Badge>
-    )
   }
 
   return (
