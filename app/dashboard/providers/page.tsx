@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Pagination } from "@/components/pagination"
 import { ProviderModal } from "@/components/provider-modal"
@@ -184,7 +184,7 @@ export default function ProvidersPage() {
             title: "状态更新成功",
             description: `供应商已${newStatus === "active" ? "启用" : "禁用"}`,
           })
-          fetchProviders()
+          fetchProviders().then(() => {})
         } else {
           toast({
             title: "状态更新失败",
