@@ -7,20 +7,7 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  LayoutDashboard,
-  Building2,
-  MessageSquare,
-  FileText,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  ChevronDown,
-  ChevronRight,
-  Loader2,
-  Truck,
-} from "lucide-react"
+import { LayoutDashboard, Building2, LogOut, Menu, X, ChevronDown, ChevronRight, Loader2, Truck } from "lucide-react"
 import { authApi } from "@/lib/auth-api"
 
 interface SidebarItem {
@@ -39,33 +26,12 @@ const sidebarItems: SidebarItem[] = [
   {
     icon: Building2,
     label: "业务管理",
-    children: [
-      {
-        icon: Building2,
-        label: "业务方信息",
-        href: "/dashboard/business",
-      },
-    ],
+    href: "/dashboard/business",
   },
   {
     icon: Truck,
     label: "供应商管理",
     href: "/dashboard/providers",
-  },
-  {
-    icon: MessageSquare,
-    label: "消息管理",
-    href: "/dashboard/messages",
-  },
-  {
-    icon: FileText,
-    label: "模板管理",
-    href: "/dashboard/templates",
-  },
-  {
-    icon: Settings,
-    label: "系统设置",
-    href: "/dashboard/settings",
   },
 ]
 
