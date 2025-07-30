@@ -248,10 +248,10 @@ export default function ProvidersPage() {
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                   <SelectValue placeholder="选择渠道" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
                   <SelectItem value="all">全部</SelectItem>
                   <SelectItem value="1">短信</SelectItem>
                   <SelectItem value="2">邮件</SelectItem>
@@ -263,7 +263,12 @@ export default function ProvidersPage() {
                 <Search className="w-4 h-4 mr-2" />
                 搜索
               </Button>
-              <Button variant="outline" onClick={handleReset} disabled={loading}>
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                disabled={loading}
+                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+              >
                 重置
               </Button>
             </div>
@@ -380,10 +385,12 @@ export default function ProvidersPage() {
 
       {/* 确认对话框 */}
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-gray-900 border-gray-700 text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>{alertAction === "delete" ? "确认删除" : "确认操作"}</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">
+              {alertAction === "delete" ? "确认删除" : "确认操作"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               {alertAction === "delete" && <>确定要删除供应商 "{alertTarget?.provider_name}" 吗？此操作不可撤销。</>}
               {alertAction === "toggle" && (
                 <>
@@ -394,7 +401,12 @@ export default function ProvidersPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={actionLoading}>取消</AlertDialogCancel>
+            <AlertDialogCancel
+              disabled={actionLoading}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+            >
+              取消
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmAction} disabled={actionLoading}>
               {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               确认

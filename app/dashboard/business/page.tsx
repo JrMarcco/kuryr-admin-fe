@@ -181,10 +181,10 @@ export default function BusinessPage() {
                 value={searchType}
                 onValueChange={(value) => setSearchType(value as "all" | "individual" | "organization")}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                   <SelectValue placeholder="选择类型" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
                   <SelectItem value="all">全部</SelectItem>
                   <SelectItem value="individual">个人</SelectItem>
                   <SelectItem value="organization">组织</SelectItem>
@@ -196,7 +196,12 @@ export default function BusinessPage() {
                 <Search className="w-4 h-4 mr-2" />
                 搜索
               </Button>
-              <Button variant="outline" onClick={handleReset} disabled={loading}>
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                disabled={loading}
+                className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+              >
                 重置
               </Button>
             </div>
@@ -327,63 +332,77 @@ export default function BusinessPage() {
 
       {/* 新增业务方模态框 */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white">
           <DialogHeader>
-            <DialogTitle>新增业务方</DialogTitle>
+            <DialogTitle className="text-white">新增业务方</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="biz_type">业务类型</Label>
+              <Label htmlFor="biz_type" className="text-gray-300">
+                业务类型
+              </Label>
               <Select
                 value={createForm.biz_type}
                 onValueChange={(value) =>
                   setCreateForm((prev) => ({ ...prev, biz_type: value as "individual" | "organization" }))
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
                   <SelectValue placeholder="选择类型" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
                   <SelectItem value="individual">个人</SelectItem>
                   <SelectItem value="organization">组织</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="biz_key">业务Key *</Label>
+              <Label htmlFor="biz_key" className="text-gray-300">
+                业务Key *
+              </Label>
               <Input
                 id="biz_key"
                 value={createForm.biz_key}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_key: e.target.value }))}
                 placeholder="请输入业务Key"
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="biz_name">业务名称 *</Label>
+              <Label htmlFor="biz_name" className="text-gray-300">
+                业务名称 *
+              </Label>
               <Input
                 id="biz_name"
                 value={createForm.biz_name}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, biz_name: e.target.value }))}
                 placeholder="请输入业务名称"
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact">联系人</Label>
+              <Label htmlFor="contact" className="text-gray-300">
+                联系人
+              </Label>
               <Input
                 id="contact"
                 value={createForm.contact}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, contact: e.target.value }))}
                 placeholder="请输入联系人"
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_email">联系人邮箱</Label>
+              <Label htmlFor="contact_email" className="text-gray-300">
+                联系人邮箱
+              </Label>
               <Input
                 id="contact_email"
                 type="email"
                 value={createForm.contact_email}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, contact_email: e.target.value }))}
                 placeholder="请输入联系人邮箱"
+                className="bg-gray-800 border-gray-700 text-white"
               />
             </div>
             {createError && (
@@ -393,7 +412,11 @@ export default function BusinessPage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:text-white"
+            >
               取消
             </Button>
             <Button onClick={handleCreateBusiness} disabled={createLoading}>

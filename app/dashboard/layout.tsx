@@ -2,267 +2,211 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  LayoutDashboard,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  BarChart3,
   Building2,
+  Settings,
+  Users,
   MessageSquare,
   FileText,
-  Settings,
-  LogOut,
+  Activity,
   Menu,
-  X,
   ChevronDown,
   ChevronRight,
-  Loader2,
-  Truck,
+  LogOut,
+  User,
 } from "lucide-react"
-import { authApi } from "@/lib/auth-api"
 
 interface SidebarItem {
-  icon: React.ComponentType<{ className?: string }>
-  label: string
+  title: string
   href?: string
+  icon: React.ComponentType<{ className?: string }>
   children?: SidebarItem[]
 }
 
 const sidebarItems: SidebarItem[] = [
   {
-    icon: LayoutDashboard,
-    label: "仪表板",
+    title: "仪表板",
     href: "/dashboard",
+    icon: BarChart3,
   },
   {
-    icon: Building2,
-    label: "业务方管理",
+    title: "业务方管理",
     href: "/dashboard/business",
+    icon: Building2,
   },
   {
-    icon: Truck,
-    label: "供应商管理",
+    title: "供应商管理",
     href: "/dashboard/providers",
+    icon: Users,
   },
   {
+    title: "消息管理",
     icon: MessageSquare,
-    label: "消息管理",
-    href: "/dashboard/messages",
+    children: [
+      {
+        title: "消息模板",
+        href: "/dashboard/messages/templates",
+        icon: FileText,
+      },
+      {
+        title: "发送记录",
+        href: "/dashboard/messages/records",
+        icon: Activity,
+      },
+    ],
   },
   {
-    icon: FileText,
-    label: "模板管理",
-    href: "/dashboard/templates",
-  },
-  {
-    icon: Settings,
-    label: "系统设置",
+    title: "系统设置",
     href: "/dashboard/settings",
+    icon: Settings,
   },
 ]
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const router = useRouter()
+function SidebarContent() {
   const pathname = usePathname()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [username, setUsername] = useState<string>("Admin") // 添加用户名状态
+  const [expandedItems, setExpandedItems] = useState<string[]>(["消息管理"])
 
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username")
-    if (storedUsername) {
-      setUsername(storedUsername)
-    }
-  }, [])
-
-  // 检查当前路径是否激活
-  const isActive = (href: string) => {
-    if (href === "/dashboard") {
-      return pathname === href
-    }
-    return pathname.startsWith(href)
+  const toggleExpanded = (title: string) => {
+    setExpandedItems((prev) => (prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]))
   }
 
-  // 检查是否有子项激活
-  const hasActiveChild = (children: SidebarItem[]) => {
-    return children.some((child) => child.href && isActive(child.href))
-  }
-
-  // 切换展开状态
-  const toggleExpanded = (label: string) => {
-    setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
-  }
-
-  // 处理登出
-  const handleLogout = async () => {
-    if (isLoggingOut) return
-
-    setIsLoggingOut(true)
-
-    try {
-      // 调用登出API
-      await authApi.logout()
-    } finally {
-      // 无论API调用是否成功，都执行本地清理
-      localStorage.removeItem("access-token")
-      localStorage.removeItem("refresh-token")
-
-      // 跳转到登录页
-      router.push("/")
-      setIsLoggingOut(false)
-    }
-  }
-
-  // 渲染侧边栏项目
   const renderSidebarItem = (item: SidebarItem, level = 0) => {
+    const isExpanded = expandedItems.includes(item.title)
     const hasChildren = item.children && item.children.length > 0
-    const isExpanded = expandedItems.includes(item.label)
-    const isItemActive = item.href ? isActive(item.href) : false
-    const hasActiveChildren = hasChildren ? hasActiveChild(item.children!) : false
+    const isActive = item.href === pathname
 
     if (hasChildren) {
       return (
-        <div key={item.label} className="space-y-1">
-          <button
-            onClick={() => toggleExpanded(item.label)}
-            className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-              hasActiveChildren
-                ? "bg-orange-900/50 text-orange-300"
-                : "text-gray-300 hover:bg-gray-800 hover:text-white"
-            }`}
+        <div key={item.title}>
+          <Button
+            variant="ghost"
+            className={cn("w-full justify-start text-left font-normal", level > 0 && "pl-8")}
+            onClick={() => toggleExpanded(item.title)}
           >
-            <div className="flex items-center">
-              <item.icon className="mr-3 h-5 w-5" />
-              {item.label}
-            </div>
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
+            <item.icon className="mr-2 h-4 w-4" />
+            {item.title}
+            {isExpanded ? <ChevronDown className="ml-auto h-4 w-4" /> : <ChevronRight className="ml-auto h-4 w-4" />}
+          </Button>
           {isExpanded && (
-            <div className="ml-4 space-y-1">{item.children!.map((child) => renderSidebarItem(child, level + 1))}</div>
+            <div className="ml-4 space-y-1">{item.children.map((child) => renderSidebarItem(child, level + 1))}</div>
           )}
         </div>
       )
     }
 
     return (
-      <Link
-        key={item.label}
-        href={item.href!}
-        className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-          isItemActive
-            ? "bg-orange-600 text-white"
-            : level > 0
-              ? "text-gray-400 hover:bg-gray-800 hover:text-white"
-              : "text-gray-300 hover:bg-gray-800 hover:text-white"
-        }`}
-        onClick={() => setSidebarOpen(false)}
+      <Button
+        key={item.title}
+        variant={isActive ? "secondary" : "ghost"}
+        className={cn("w-full justify-start text-left font-normal", level > 0 && "pl-8", isActive && "bg-secondary")}
+        asChild
       >
-        <item.icon className="mr-3 h-5 w-5" />
-        {item.label}
-      </Link>
+        <Link href={item.href!}>
+          <item.icon className="mr-2 h-4 w-4" />
+          {item.title}
+        </Link>
+      </Button>
     )
   }
 
-  const getUserInitial = (name: string) => {
-    return name.charAt(0).toUpperCase()
-  }
-
   return (
-    <div className="flex h-screen bg-black">
-      {/* 侧边栏 */}
-      <div
-        className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-black border-r border-gray-900 transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0 lg:static lg:inset-0
-      `}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo section */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-900">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">K</span>
-              </div>
-              <span className="text-xl font-bold text-white">Kuryr</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-gray-400 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+    <div className="flex h-full flex-col">
+      <div className="flex h-14 items-center border-b px-4">
+        <Link className="flex items-center gap-2 font-semibold" href="/dashboard">
+          <MessageSquare className="h-6 w-6" />
+          <span>消息中心</span>
+        </Link>
+      </div>
+      <ScrollArea className="flex-1 px-3">
+        <div className="space-y-1 py-4">{sidebarItems.map((item) => renderSidebarItem(item))}</div>
+      </ScrollArea>
+    </div>
+  )
+}
 
-          {/* Navigation - takes remaining space */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {sidebarItems.map((item) => renderSidebarItem(item))}
-          </nav>
-
-          {/* User info - stays at the bottom */}
-          <div className="border-t border-gray-900 p-4">
-            <Card className="bg-gray-900 border-gray-800">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">{getUserInitial(username)}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white" title={username}>
-                        {username}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-2"
-                    title="登出"
-                  >
-                    {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex h-screen">
+      {/* Desktop Sidebar */}
+      <div className="hidden w-64 border-r bg-background lg:block">
+        <SidebarContent />
       </div>
 
-      {/* 主内容区域 */}
-      <div className="flex-1 flex flex-col lg:ml-0">
-        {/* 顶部导航栏 */}
-        <header className="h-16 bg-black border-b border-gray-900 flex items-center justify-between px-4 lg:px-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden text-gray-400 hover:text-white"
-          >
-            <Menu className="h-5 w-5" />
+      {/* Mobile Sidebar */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="lg:hidden fixed top-4 left-4 z-40 bg-transparent">
+            <Menu className="h-4 w-4" />
           </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64 p-0">
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col">
+        {/* Header */}
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
           <div className="flex-1" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/placeholder-user.jpg" alt="用户头像" />
+                  <AvatarFallback>管理员</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">管理员</p>
+                  <p className="text-xs leading-none text-muted-foreground">admin@example.com</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>个人资料</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>设置</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>退出登录</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </header>
 
-        {/* 页面内容 */}
+        {/* Page Content */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
-
-      {/* 移动端遮罩 */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
     </div>
   )
 }
