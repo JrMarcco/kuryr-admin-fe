@@ -251,14 +251,18 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                   type="number"
                   min="1"
                   value={formData.weight || ""}
-                  onChange={(e) => setFormData({ ...formData, weight: Number.parseInt(e.target.value) || 1 })}
+                  onChange={(e) => {
+                    const value = Number.parseInt(e.target.value) || 1
+                    const clampedValue = Math.max(1, Math.min(9, value))
+                    setFormData({ ...formData, weight: clampedValue })
+                  }}
                   disabled={isReadOnly}
                   placeholder="权重"
                   className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="qps_limit" className="text-gray-300">QPS限流</Label>
+                <Label htmlFor="qps_limit" className="text-gray-300">QPS 限流</Label>
                 <Input
                   id="qps_limit"
                   type="number"

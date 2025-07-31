@@ -78,7 +78,7 @@ export default function ProvidersPage() {
 
       const response = await providerApi.getList(params)
       if (response.code === 200 && response.data) {
-        setProviders(response.data.content || [])
+        setProviders(response.data.records || [])
         setTotalCount(response.data.total)
         setTotalPages(Math.ceil(response.data.total / pageSize))
       } else {

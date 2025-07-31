@@ -10,7 +10,7 @@ interface RetryPolicyConfig {
 }
 
 interface ChannelItem {
-  channel: "sms" | "email" // 渠道类型
+  channel: 1 | 2 // 渠道类型
   priority: number // 优先级 1-9
   enabled: boolean // 是否启用
 }

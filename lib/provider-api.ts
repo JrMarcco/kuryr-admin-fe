@@ -1,5 +1,4 @@
 import { api, type ApiResponse } from "./api"
-import { Business } from "@/lib/business-api";
 
 export interface Provider {
   id: number
@@ -23,11 +22,11 @@ export interface ProviderListRequest {
   offset: number
   limit: number
   provider_name?: string
-  channel?: 1 | 2 | ""
+  channel?: 1 | 2 | 0
 }
 
 export interface ProviderListResponse {
-  content: Provider[]
+  records: Provider[]
   total: number
 }
 
@@ -52,12 +51,12 @@ export const providerApi = {
     const searchParams = new URLSearchParams()
 
     if (params.offset) searchParams.append("offset", params.offset.toString())
-    if (params.limit) searchParams.append("page_size", params.limit.toString())
+    if (params.limit) searchParams.append("limit", params.limit.toString())
     if (params.provider_name) searchParams.append("provider_name", params.provider_name)
     if (params.channel) searchParams.append("channel", params.channel.toString())
 
     const queryString = searchParams.toString()
-    const endpoint = `/v1/provider/list${queryString ? `?${queryString}` : ""}`
+    const endpoint = `/v1/provider/search${queryString ? `?${queryString}` : ""}`
 
     return api.get<ProviderListResponse>(endpoint)
   },
@@ -73,7 +72,7 @@ export const providerApi = {
   },
 
   // 更新供应商状态
-  async updateStatus(id: number, active_status: "active" | "inactive"): Promise<ApiResponse<any>> {
+  async updateStatus(id: number, active_status: "active" | "inactive"): Promise<ApiResponse> {
     return api.put("/v1/provider/update_status", { id, active_status })
   },
 

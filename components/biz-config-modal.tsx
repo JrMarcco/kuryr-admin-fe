@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from "react"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle
@@ -14,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Loader2, Save, Edit, Plus, Trash2, Database, CheckCircle, AlertCircle } from "lucide-react"
@@ -104,7 +103,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       setHasData(false) // 无数据时设置为false，显示空状态
       setFormData({
         biz_id: businessId,
-        rate_limit: 0,
+        rate_limit: 1,
         channel_config: {
           channels: [],
           retry_policy_config: {
@@ -159,6 +158,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   const handleSave = async () => {
     setSaveSuccess(false) // 重置保存成功状态
     setSaveErrorMsg("") // 重置错误信息
+
     const response = await executeSaveConfig(formData)
 
     if (response.code === 200) {
@@ -219,7 +219,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   // 添加渠道
   const addChannel = () => {
     const newChannel: ChannelItem = {
-      channel: "sms",
+      channel: 1,
       priority: 1,
       enabled: true,
     }
@@ -371,12 +371,12 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                                       <select
                                         value={channel.channel}
                                         onChange={(e) =>
-                                          updateChannel(index, "channel", e.target.value as "sms" | "email")
+                                          updateChannel(index, "channel", Number.parseInt(e.target.value) as 1 | 2)
                                         }
                                         className="w-full mt-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
                                       >
-                                        <option value="sms">短信 (SMS)</option>
-                                        <option value="email">邮件 (Email)</option>
+                                        <option value="1">短信 (SMS)</option>
+                                        <option value="2">邮件 (Email)</option>
                                       </select>
                                     </div>
                                     <div className="flex-1">
@@ -418,12 +418,12 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                                       <Badge
                                         variant="secondary"
                                         className={
-                                          channel.channel === "sms"
+                                          channel.channel === 1
                                             ? "bg-blue-600/20 text-blue-400 border-blue-600/30"
                                             : "bg-green-600/20 text-green-400 border-green-600/30"
                                         }
                                       >
-                                        {channel.channel === "sms" ? "短信" : "邮件"}
+                                        {channel.channel === 1 ? "短信" : "邮件"}
                                       </Badge>
                                     </div>
                                     <div className="flex-1 text-white">
