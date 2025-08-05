@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronRight, Home } from "lucide-react"
@@ -26,21 +25,21 @@ export function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
   return (
     <nav className={`flex items-center space-x-1 text-sm ${className}`} aria-label="面包屑导航">
       <Link href="/dashboard" className="flex items-center text-gray-400 hover:text-orange-400 transition-colors">
-        <Home className="h-4 w-4 mr-1" />
+        <Home className="h-4 w-4 mr-1"/>
         首页
       </Link>
 
       {breadcrumbItems.map((item, index) => (
         <div key={index} className="flex items-center">
-          <ChevronRight className="h-4 w-4 text-gray-500 mx-1" />
+          <ChevronRight className="h-4 w-4 text-gray-500 mx-1"/>
           {item.href ? (
             <Link href={item.href} className="text-gray-400 hover:text-orange-400 transition-colors flex items-center">
-              {item.icon && <item.icon className="h-4 w-4 mr-1" />}
+              {item.icon && <item.icon className="h-4 w-4 mr-1"/>}
               {item.label}
             </Link>
           ) : (
             <span className="text-white flex items-center">
-              {item.icon && <item.icon className="h-4 w-4 mr-1" />}
+              {item.icon && <item.icon className="h-4 w-4 mr-1"/>}
               {item.label}
             </span>
           )}

@@ -7,7 +7,7 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-import { LayoutDashboard, Building2, LogOut, Menu, X, ChevronDown, ChevronRight, Loader2, Truck } from "lucide-react"
+import { LayoutDashboard, Building2, LogOut, Menu, X, ChevronDown, ChevronRight, Loader2, Truck, FileText } from "lucide-react"
 import { authApi } from "@/lib/auth-api"
 
 interface SidebarItem {
@@ -31,7 +31,12 @@ const sidebarItems: SidebarItem[] = [
   {
     icon: Truck,
     label: "供应商管理",
-    href: "/dashboard/providers",
+    href: "/dashboard/provider",
+  },
+  {
+    icon: FileText,
+    label: "模板管理",
+    href: "/dashboard/template",
   },
 ]
 
@@ -43,7 +48,6 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<string[]>(["业务方管理"])
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [username, setUsername] = useState<string>("Admin") // 添加用户名状态
 
@@ -65,11 +69,6 @@ export default function DashboardLayout({
   // 检查是否有子项激活
   const hasActiveChild = (children: SidebarItem[]) => {
     return children.some((child) => child.href && isActive(child.href))
-  }
-
-  // 切换展开状态
-  const toggleExpanded = (label: string) => {
-    setExpandedItems((prev) => (prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]))
   }
 
   // 处理登出
@@ -95,33 +94,8 @@ export default function DashboardLayout({
   // 渲染侧边栏项目
   const renderSidebarItem = (item: SidebarItem, level = 0) => {
     const hasChildren = item.children && item.children.length > 0
-    const isExpanded = expandedItems.includes(item.label)
     const isItemActive = item.href ? isActive(item.href) : false
     const hasActiveChildren = hasChildren ? hasActiveChild(item.children!) : false
-
-    if (hasChildren) {
-      return (
-        <div key={item.label} className="space-y-1">
-          <button
-            onClick={() => toggleExpanded(item.label)}
-            className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
-              hasActiveChildren
-                ? "bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg transform scale-105"
-                : "text-gray-300 hover:bg-gradient-to-r hover:from-gray-600 hover:to-gray-500 hover:text-white hover:shadow-md hover:scale-105"
-            }`}
-          >
-            <div className="flex items-center">
-              <item.icon className={`mr-3 h-5 w-5 ${hasActiveChildren ? 'text-white' : ''}`} />
-              {item.label}
-            </div>
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
-          {isExpanded && (
-            <div className="ml-4 space-y-1">{item.children!.map((child) => renderSidebarItem(child, level + 1))}</div>
-          )}
-        </div>
-      )
-    }
 
     return (
       <Link
@@ -136,7 +110,7 @@ export default function DashboardLayout({
         }`}
         onClick={() => setSidebarOpen(false)}
       >
-        <item.icon className={`mr-3 h-5 w-5 ${isItemActive ? 'text-white' : ''}`} />
+        <item.icon className={`mr-3 h-5 w-5 ${isItemActive ? 'text-white' : ''}`}/>
         {item.label}
       </Link>
     )
@@ -158,9 +132,11 @@ export default function DashboardLayout({
       >
         <div className="flex flex-col h-full">
           {/* Logo section */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-gray-600">
+          <div
+            className="flex items-center justify-between h-16 px-4 border-b border-gray-700 bg-gradient-to-r from-gray-700 to-gray-600">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+              <div
+                className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
                 <span className="text-white font-bold text-lg">K</span>
               </div>
               <div>
@@ -173,7 +149,7 @@ export default function DashboardLayout({
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-400 hover:text-white hover:bg-gray-600 rounded-lg"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5"/>
             </Button>
           </div>
 
@@ -187,7 +163,8 @@ export default function DashboardLayout({
             <div className="bg-gradient-to-r from-gray-700 to-gray-600 border border-gray-600 rounded-xl shadow-xl p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-orange-400/30">
+                  <div
+                    className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-orange-400/30">
                     <span className="text-white text-sm font-bold">{getUserInitial(username)}</span>
                   </div>
                   <div>
@@ -204,7 +181,7 @@ export default function DashboardLayout({
                   className="text-gray-300 hover:text-red-400 hover:bg-red-600/20 p-2 rounded-xl transition-all duration-200 hover:scale-105"
                   title="登出"
                 >
-                  {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                  {isLoggingOut ? <Loader2 className="h-4 w-4 animate-spin"/> : <LogOut className="h-4 w-4"/>}
                 </Button>
               </div>
             </div>
@@ -215,16 +192,17 @@ export default function DashboardLayout({
       {/* 主内容区域 */}
       <div className="flex-1 flex flex-col lg:ml-0">
         {/* 顶部导航栏 */}
-        <header className="h-16 bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 flex items-center justify-between px-4 lg:px-6 shadow-lg">
+        <header
+          className="h-16 bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 flex items-center justify-between px-4 lg:px-6 shadow-lg">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden text-gray-300 hover:text-white hover:bg-gray-600 rounded-xl transition-all duration-200 hover:scale-105"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5"/>
           </Button>
-          <div className="flex-1" />
+          <div className="flex-1"/>
         </header>
 
         {/* 页面内容 */}
@@ -233,7 +211,7 @@ export default function DashboardLayout({
 
       {/* 移动端遮罩 */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)}/>
       )}
     </div>
   )

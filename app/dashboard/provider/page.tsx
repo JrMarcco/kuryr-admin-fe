@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,7 +26,7 @@ import { Eye, Trash2, Plus, Search, Loader2 } from "lucide-react"
 import { providerApi, type Provider, type ProviderListRequest } from "@/lib/provider-api"
 import { useToast } from "@/hooks/use-toast"
 
-export default function ProvidersPage() {
+export default function ProviderPage() {
 
   const { toast } = useToast()
   const [providers, setProviders] = useState<Provider[]>([])
@@ -41,7 +41,7 @@ export default function ProvidersPage() {
     offset: 0,
     limit: 20,
     provider_name: "",
-    channel: ""
+    channel: 0
   })
 
   // 模态框状态
@@ -57,7 +57,7 @@ export default function ProvidersPage() {
 
   const breadcrumbItems = [
     { label: "仪表板", href: "/dashboard" },
-    { label: "供应商管理", href: "/dashboard/providers" },
+    { label: "供应商管理", href: "/dashboard/provider" },
   ]
 
   // 获取供应商列表
@@ -115,7 +115,7 @@ export default function ProvidersPage() {
       offset: 0,
       limit: 20,
       provider_name: "",
-      channel: "",
+      channel: 0,
     })
     setCurrentPage(1)
     setTimeout(() => {
@@ -235,7 +235,7 @@ export default function ProvidersPage() {
                   onValueChange={(value) =>
                     setSearchParams({
                       ...searchParams,
-                      channel: value === "all" ? "" : (Number.parseInt(value) as 1 | 2)
+                      channel: value === "all" ? 0 : (Number.parseInt(value) as 1 | 2)
                     })
                   }
                 >
@@ -285,7 +285,7 @@ export default function ProvidersPage() {
                   <TableHead className="w-[20%]">供应商名称</TableHead>
                   <TableHead className="w-[12%]">渠道</TableHead>
                   <TableHead className="w-[8%]">权重</TableHead>
-                  <TableHead className="w-[10%]">QPS限流</TableHead>
+                  <TableHead className="w-[10%]">QPS 限流</TableHead>
                   <TableHead className="w-[10%]">每日限流</TableHead>
                   <TableHead className="w-[10%]">启用状态</TableHead>
                   <TableHead className="w-[10%]">查看详情</TableHead>

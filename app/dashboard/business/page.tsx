@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react";
-
+import type React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -137,7 +136,7 @@ export default function BusinessPage() {
   }
 
   const breadcrumbItems = [
-    { label: "首页", href: "/dashboard" },
+    { label: "仪表板", href: "/dashboard" },
     { label: "业务方管理", href: "/dashboard/business" },
   ]
 

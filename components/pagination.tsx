@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
@@ -73,7 +72,7 @@ export function Pagination({
             disabled={currentPage === 1 || loading}
             className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <ChevronsLeft className="h-4 w-4"/>
           </Button>
           <Button
             variant="outline"
@@ -82,7 +81,7 @@ export function Pagination({
             disabled={currentPage === 1 || loading}
             className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4"/>
           </Button>
 
           <div className="flex items-center space-x-1">
@@ -100,7 +99,7 @@ export function Pagination({
             disabled={currentPage === totalPages || loading}
             className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4"/>
           </Button>
           <Button
             variant="outline"
@@ -109,7 +108,7 @@ export function Pagination({
             disabled={currentPage === totalPages || loading}
             className="h-8 w-8 p-0 border-gray-900 text-gray-300 hover:bg-gray-900 bg-black"
           >
-            <ChevronsRight className="h-4 w-4" />
+            <ChevronsRight className="h-4 w-4"/>
           </Button>
         </div>
       </div>
