@@ -9,7 +9,7 @@ export interface Template {
     tpl_name: string
     tpl_desc: string
     channel: 1 | 2
-    notification_type: 0 | 1
+    notification_type: 1 | 2
     created_at: number
     updated_at: number
 }
@@ -25,6 +25,13 @@ export interface TemplateListResponse {
     total: number
 }
 
+export interface TemplateSaveParams {
+    tpl_name: string
+    tpl_desc: string
+    channel: 1 | 2
+    notification_type: 1 | 2
+}
+
 export const templateApi = {
     // 获取模板列表
     async getList(params: TemplateListRequest): Promise<ApiResponse<TemplateListResponse>> {
@@ -38,5 +45,20 @@ export const templateApi = {
         const endpoint = `/v1/template/search${queryString ? `?${queryString}` : ""}`
 
         return api.get<TemplateListResponse>(endpoint)
-    }
+    },
+
+    // 获取模板详情
+    async getDetail(id: number): Promise<ApiResponse<Template>> {
+        return api.get<Template>(`/v1/template/find?id=${id}`)
+    },
+
+    // 保存模板
+    async save(data: TemplateSaveParams): Promise<ApiResponse> {
+        return api.post("/v1/template/save", data)
+    },
+
+    // 删除模板
+    async delete(id: number): Promise<ApiResponse> {
+        return api.delete(`/v1/template/delete?id=${id}`)
+    },
 }

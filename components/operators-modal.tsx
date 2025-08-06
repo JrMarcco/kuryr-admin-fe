@@ -91,7 +91,7 @@ export function OperatorsModal({ isOpen, onClose, businessId, businessName }: Op
 
   useEffect(() => {
     if (isOpen && businessId) {
-      fetchOperators().then(() => {})
+      fetchOperators()
     }
   }, [isOpen, businessId])
 

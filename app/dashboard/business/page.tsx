@@ -84,7 +84,7 @@ export default function BusinessPage() {
   // 搜索
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchBusinesses(1).then(() => {})
+    fetchBusinesses(1)
   }
 
   // 重置搜索
@@ -96,12 +96,12 @@ export default function BusinessPage() {
     })
     setCurrentPage(1)
     setTimeout(() => {
-      fetchBusinesses(1).then(() => {})
+      fetchBusinesses(1)
     }, 0)
   }
 
   useEffect(() => {
-    fetchBusinesses(currentPage).then(() => {})
+    fetchBusinesses(currentPage)
   }, [currentPage])
 
   const handlePageChange = (page: number) => {
@@ -131,7 +131,7 @@ export default function BusinessPage() {
         contact_email: "",
       })
       // 重新加载业务方列表
-      fetchBusinesses(currentPage).then(() => {})
+      fetchBusinesses(currentPage)
     }
   }
 

@@ -7,9 +7,20 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { Pagination } from "@/components/pagination"
+import { TemplateModal } from "@/components/template-model"
 import { Eye, Trash2, Plus, Search, Loader2 } from "lucide-react"
 import { templateApi, type Template, type TemplateListRequest } from "@/lib/template-api"
 import { useToast } from "@/hooks/use-toast"
@@ -32,22 +43,27 @@ export default function TemplatePage() {
     channel: 0
   })
 
+  // 模态框状态
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<"view" | "create" | "edit">("view")
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number>()
+
   const breadcrumbItems = [
     { label: "仪表板", href: "/dashboard" },
     { label: "模板管理", href: "/dashboard/template" },
   ]
 
   const fetchTemplates = async (page = currentPage) => {
-    setLoading(true)
+    // setLoading(true)
   }
 
   useEffect(() => {
-    fetchTemplates(1).then(() => {})
+    fetchTemplates(1)
   }, [])
 
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchTemplates(1).then(() => {})
+    fetchTemplates(1)
   }
   
   const handleReset = () => {
@@ -58,19 +74,21 @@ export default function TemplatePage() {
     })
     setCurrentPage(1)
     setTimeout(() => {
-      fetchTemplates(1).then(() => {})
+      fetchTemplates(1)
     }, 0)
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    fetchTemplates(page).then(() => {})
+    fetchTemplates(page)
   }
 
   const handleCreate = () => {
-    //TODO: 新增模板
-    console.log("handleCreate")
+    setSelectedTemplateId(undefined)
+    setModalMode("create")
+    setModalOpen(true)
   }
+
 
   return (
     <div className="w-full p-6 space-y-6 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen">
@@ -187,11 +205,11 @@ export default function TemplatePage() {
                           {template.channel === 1 ? "📱 短信" : "📧 邮件"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-medium" title={template.notification_type === 0 ? "验证码" : "通知"}>
-                        <Badge className={template.notification_type === 0
+                      <TableCell className="font-medium" title={template.notification_type === 1 ? "验证码" : "通知"}>
+                        <Badge className={template.notification_type === 1
                           ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-sm"
                           : "bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-sm"}>
-                          {template.notification_type === 0 ? "验证码" : "通知"}
+                          {template.notification_type === 1 ? "验证码" : "通知"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-gray-300" title={formatTimestamp(template.created_at)}>
@@ -231,6 +249,15 @@ export default function TemplatePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 模板模态框 */}
+      <TemplateModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        templateId={selectedTemplateId}
+        mode={modalMode}
+        onSuccess={() => fetchTemplates()}
+      />
     </div>
   )
 }

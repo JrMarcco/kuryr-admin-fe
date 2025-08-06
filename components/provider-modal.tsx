@@ -51,7 +51,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
   // 获取供应商详情
   useEffect(() => {
     if (open && providerId && !isCreate) {
-      fetchProviderDetail().then(() => {})
+      fetchProviderDetail()
     } else if (open && isCreate) {
       // 重置表单数据
       setFormData({
@@ -177,7 +177,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
   const getTitle = () => {
     switch (mode) {
       case "view":
-        return "查看供应商详情"
+        return "供应商信息"
       case "create":
         return "新增供应商"
       case "edit":
@@ -204,7 +204,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin"/>
+            <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2">加载中...</span>
           </div>
         ) : (
@@ -225,14 +225,14 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                 <Label htmlFor="channel" className="text-gray-300">渠道 *</Label>
                 {isReadOnly ? (
                   <Input value={getChannelText(formData.channel!)} disabled
-                         className="bg-gray-800 border-gray-700 text-white"/>
+                    className="bg-gray-800 border-gray-700 text-white" />
                 ) : (
                   <Select
                     value={formData.channel?.toString()}
                     onValueChange={(value) => setFormData({ ...formData, channel: Number.parseInt(value) as 1 | 2 })}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                      <SelectValue placeholder="选择渠道"/>
+                      <SelectValue placeholder="选择渠道" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-700">
                       <SelectItem value="1" className="text-white hover:bg-gray-700">短信</SelectItem>
@@ -294,7 +294,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                 <Label htmlFor="active_status" className="text-gray-300">状态</Label>
                 {isReadOnly ? (
                   <Input value={getStatusText(formData.active_status!)} disabled
-                         className="bg-gray-800 border-gray-700 text-white"/>
+                    className="bg-gray-800 border-gray-700 text-white" />
                 ) : (
                   <Select
                     value={formData.active_status}
@@ -303,7 +303,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                     }
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                      <SelectValue placeholder="选择状态"/>
+                      <SelectValue placeholder="选择状态" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-800 border-gray-700">
                       <SelectItem value="active" className="text-white hover:bg-gray-700">启用</SelectItem>
@@ -382,7 +382,7 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
                   onClick={() => setShowApiSecret(!showApiSecret)}
                   disabled={isReadOnly}
                 >
-                  {showApiSecret ? <EyeOff className="h-4 w-4"/> : <Eye className="h-4 w-4"/>}
+                  {showApiSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
@@ -404,13 +404,13 @@ export function ProviderModal({ open, onOpenChange, providerId, mode, onSuccess 
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800">
+            className="border-gray-600 text-gray-300 hover:bg-gray-800">
             {isReadOnly ? "关闭" : "取消"}
           </Button>
           {!isReadOnly && (
             <Button onClick={handleSave} disabled={saving || loading}
-                    className="bg-orange-600 hover:bg-orange-700 text-white">
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              className="bg-orange-600 hover:bg-orange-700 text-white">
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               保存
             </Button>
           )}

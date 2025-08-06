@@ -100,13 +100,13 @@ export default function ProviderPage() {
   }
 
   useEffect(() => {
-    fetchProviders(1).then(() => {})
+    fetchProviders(1)
   }, [])
 
   // 搜索
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchProviders(1).then(() => {})
+    fetchProviders(1)
   }
 
   // 重置搜索
@@ -119,14 +119,14 @@ export default function ProviderPage() {
     })
     setCurrentPage(1)
     setTimeout(() => {
-      fetchProviders(1).then(() => {})
+      fetchProviders(1)
     }, 0)
   }
 
   // 分页
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    fetchProviders(page).then(() => {})
+    fetchProviders(page)
   }
 
   // 查看详情
@@ -170,7 +170,7 @@ export default function ProviderPage() {
             title: "删除成功",
             description: "供应商已删除",
           })
-          fetchProviders().then(() => {})
+          fetchProviders()
         } else {
           toast({
             title: "删除失败",
@@ -186,7 +186,7 @@ export default function ProviderPage() {
             title: "状态更新成功",
             description: `供应商已${newStatus === "active" ? "启用" : "禁用"}`,
           })
-          fetchProviders().then(() => {})
+          fetchProviders()
         } else {
           toast({
             title: "状态更新失败",
