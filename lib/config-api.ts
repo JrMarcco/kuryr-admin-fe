@@ -47,7 +47,8 @@ interface BizConfig {
   updated_at: number
 }
 
-interface CreateConfigRequest {
+interface SaveConfigRequest {
+  id?: string
   biz_id: string
   rate_limit: number
   channel_config: ChannelConfig
@@ -69,14 +70,14 @@ export const configApi = {
   },
 
   // 创建或更新业务方配置
-  async saveBizConfig(config: CreateConfigRequest): Promise<ApiResponse<BizConfig>> {
+  async saveBizConfig(config: SaveConfigRequest): Promise<ApiResponse<BizConfig>> {
     return api.post<BizConfig>("/v1/biz_config/save", config)
   },
 }
 
 export type {
   BizConfig,
-  CreateConfigRequest,
+  SaveConfigRequest,
   GetConfigRequest,
   RetryPolicyConfig,
   ChannelConfig,

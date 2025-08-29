@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Loader2, Save, Edit, Plus, Trash2, Database, CheckCircle, AlertCircle } from "lucide-react"
-import { configApi, type BizConfig, type CreateConfigRequest, type ChannelItem } from "@/lib/config-api"
+import { configApi, type BizConfig, type SaveConfigRequest, type ChannelItem } from "@/lib/config-api"
 import { useApi } from "@/hooks/use-api"
 
 interface BizConfigModalProps {
@@ -33,9 +33,9 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveErrorMsg, setSaveErrorMsg] = useState<string>("")
   const fetchedRef = useRef<string | null>(null) // 记录已经获取过配置的 businessId
-  const [formData, setFormData] = useState<CreateConfigRequest>({
+  const [formData, setFormData] = useState<SaveConfigRequest>({
     biz_id: businessId,
-    rate_limit: 100,
+    rate_limit: 1,
     channel_config: {
       channels: [],
       retry_policy_config: {
@@ -90,6 +90,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
       setConfig(response.data)
       setHasData(true) // 有数据时设置为true，显示表格
       setFormData({
+        id: response.data.id,
         biz_id: businessId,
         rate_limit: response.data.rate_limit,
         channel_config: response.data.channel_config,
@@ -185,6 +186,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   const handleCancel = () => {
     if (config) {
       setFormData({
+        id: config.id,
         biz_id: businessId,
         rate_limit: config.rate_limit,
         channel_config: config.channel_config,
@@ -241,11 +243,11 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
   // 渲染空状态
   const renderEmptyState = () => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Database className="h-16 w-16 text-gray-600 mb-4"/>
+      <Database className="h-16 w-16 text-gray-600 mb-4" />
       <h3 className="text-lg font-medium text-gray-300 mb-2">暂无配置数据</h3>
       <p className="text-gray-500 mb-6">该业务方还没有配置信息，点击编辑按钮开始配置</p>
       <Button onClick={handleEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
-        <Edit className="mr-2 h-4 w-4"/>
+        <Edit className="mr-2 h-4 w-4" />
         开始配置
       </Button>
     </div>
@@ -261,7 +263,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
         <div className="mt-4 space-y-6">
           {getConfigLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2"/>
+              <Loader2 className="h-6 w-6 animate-spin text-orange-500 mr-2" />
               <span className="text-gray-400">加载配置中...</span>
             </div>
           ) : (
@@ -277,7 +279,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
               {saveSuccess && (
                 <div className="bg-green-900/50 border border-green-800 rounded-lg p-3">
                   <div className="flex items-center">
-                    <CheckCircle className="h-5 w-5 text-green-400 mr-2"/>
+                    <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
                     <p className="text-green-300 text-sm">配置保存成功！</p>
                   </div>
                 </div>
@@ -287,7 +289,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
               {(getConfigError || saveConfigError || saveErrorMsg) && (
                 <div className="bg-red-900/50 border border-red-800 rounded-lg p-3">
                   <div className="flex items-center">
-                    <AlertCircle className="h-5 w-5 text-red-400 mr-2"/>
+                    <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
                     <p className="text-red-300 text-sm">
                       {saveErrorMsg
                         ? saveErrorMsg
@@ -346,7 +348,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                               size="sm"
                               className="bg-green-600 hover:bg-green-700 text-white"
                             >
-                              <Plus className="mr-1 h-4 w-4"/>
+                              <Plus className="mr-1 h-4 w-4" />
                               添加渠道
                             </Button>
                           )}
@@ -407,7 +409,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
                                         variant="destructive"
                                         className="bg-red-600 hover:bg-red-700"
                                       >
-                                        <Trash2 className="h-4 w-4"/>
+                                        <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </div>
                                   </>
@@ -712,12 +714,12 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
               >
                 {saveConfigLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     保存中...
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-4 w-4"/>
+                    <Save className="mr-2 h-4 w-4" />
                     保存
                   </>
                 )}
@@ -725,7 +727,7 @@ export function BizConfigModal({ isOpen, onClose, businessId, businessName }: Bi
             </>
           ) : (
             <Button onClick={handleEdit} className="bg-orange-600 hover:bg-orange-700 text-white">
-              <Edit className="mr-2 h-4 w-4"/>
+              <Edit className="mr-2 h-4 w-4" />
               {hasData ? "编辑配置" : "开始配置"}
             </Button>
           )}
