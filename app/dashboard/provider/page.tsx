@@ -3,8 +3,6 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
@@ -64,23 +62,10 @@ export default function ProviderPage() {
   const fetchProviders = async (page = currentPage) => {
     setLoading(true)
     try {
-      const offset = (page - 1) * pageSize
-      const params: ProviderListRequest = {
-        offset: offset,
-        limit: pageSize,
-        provider_name: searchParams.provider_name,
-        channel: searchParams.channel,
-      }
 
-      // 过滤空值
-      if (!params.provider_name) delete params.provider_name
-      if (!params.channel) delete params.channel
-
-      const response = await providerApi.getList(params)
+      const response = await providerApi.getList()
       if (response.code === 200 && response.data) {
         setProviders(response.data.records || [])
-        setTotalCount(response.data.total)
-        setTotalPages(Math.ceil(response.data.total / pageSize))
       } else {
         toast({
           title: "获取供应商列表失败",
@@ -210,68 +195,18 @@ export default function ProviderPage() {
 
   return (
     <div className="w-full p-6 space-y-6 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen">
-      <Breadcrumb items={breadcrumbItems}/>
+      <Breadcrumb items={breadcrumbItems} />
 
       <Card className="border-0 shadow-2xl bg-gray-800 border-gray-700">
         <CardHeader className="border-b border-gray-700 bg-gray-800">
           <CardTitle className="text-xl font-semibold text-white">供应商管理</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6 bg-gray-800">
-          {/* 搜索区域 */}
-          <div className="bg-gradient-to-r from-gray-700 to-gray-600 p-4 rounded-lg border border-gray-600">
-            <div className="flex flex-wrap gap-4 items-end">
-              <div className="flex-1 min-w-[200px]">
-                <Input
-                  placeholder="请输入供应商名称"
-                  value={searchParams.provider_name || ""}
-                  onChange={(e) => setSearchParams({ ...searchParams, provider_name: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                  className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-400 focus:ring-emerald-400"
-                />
-              </div>
-              <div className="min-w-[150px]">
-                <Select
-                  value={searchParams.channel ? String(searchParams.channel) : "all"}
-                  onValueChange={(value) =>
-                    setSearchParams({
-                      ...searchParams,
-                      channel: value === "all" ? 0 : (Number.parseInt(value) as 1 | 2)
-                    })
-                  }
-                >
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white focus:border-emerald-400">
-                    <SelectValue placeholder="选择渠道"/>
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-700 border-gray-600">
-                    <SelectItem value="all" className="text-white hover:bg-gray-600">全部</SelectItem>
-                    <SelectItem value="1" className="text-white hover:bg-gray-600">短信</SelectItem>
-                    <SelectItem value="2" className="text-white hover:bg-gray-600">邮件</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-3">
-                <Button onClick={handleReset} disabled={loading}
-                        className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-md">
-                  重置
-                </Button>
-                <Button onClick={handleSearch} disabled={loading}
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
-                  <Search className="w-4 h-4 mr-2"/>
-                  搜索
-                </Button>
-              </div>
-            </div>
-          </div>
-
           {/* 操作区域 */}
           <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-300 font-medium">
-              共 <span className="text-emerald-400 font-bold">{totalCount}</span> 条记录，当前第 <span
-              className="text-emerald-400 font-bold">{currentPage}</span> 页
-            </div>
             <Button onClick={handleCreate}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
-              <Plus className="w-4 h-4 mr-2"/>
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
+              <Plus className="w-4 h-4 mr-2" />
               新增供应商
             </Button>
           </div>
@@ -296,7 +231,7 @@ export default function ProviderPage() {
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto"/>
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
                       <div className="mt-2">加载中...</div>
                     </TableCell>
                   </TableRow>
@@ -330,25 +265,24 @@ export default function ProviderPage() {
                             onCheckedChange={() => handleToggleStatus(provider)}
                             className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-green-500 data-[state=checked]:to-green-600 shadow-sm"
                           />
-                          <span className={`text-xs font-medium ${
-                            provider.active_status === "active"
-                              ? "text-green-600"
-                              : "text-gray-500"
-                          }`}>
+                          <span className={`text-xs font-medium ${provider.active_status === "active"
+                            ? "text-green-600"
+                            : "text-gray-500"
+                            }`}>
                             {provider.active_status === "active" ? "✅ 启用" : "❌ 禁用"}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <Button variant="ghost" size="sm" onClick={() => handleView(provider)} title="查看详情"
-                                className="text-gray-300 hover:bg-blue-600 hover:text-white transition-colors">
-                          <Eye className="h-4 w-4"/>
+                          className="text-gray-300 hover:bg-blue-600 hover:text-white transition-colors">
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>
                       <TableCell>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(provider)} title="删除"
-                                className="text-red-400 hover:text-red-200 hover:bg-red-600 transition-colors">
-                          <Trash2 className="h-4 w-4"/>
+                          className="text-red-400 hover:text-red-200 hover:bg-red-600 transition-colors">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -404,10 +338,10 @@ export default function ProviderPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={actionLoading}
-                               className="border-gray-600 text-gray-300 hover:bg-gray-800">取消</AlertDialogCancel>
+              className="border-gray-600 text-gray-300 hover:bg-gray-800">取消</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmAction} disabled={actionLoading}
-                               className="bg-orange-600 hover:bg-orange-700 text-white">
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              className="bg-orange-600 hover:bg-orange-700 text-white">
+              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               确认
             </AlertDialogAction>
           </AlertDialogFooter>

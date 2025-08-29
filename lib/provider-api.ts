@@ -27,7 +27,6 @@ export interface ProviderListRequest {
 
 export interface ProviderListResponse {
   records: Provider[]
-  total: number
 }
 
 export interface ProviderSaveParams {
@@ -47,18 +46,8 @@ export interface ProviderSaveParams {
 
 export const providerApi = {
   // 获取供应商列表
-  async getList(params: ProviderListRequest): Promise<ApiResponse<ProviderListResponse>> {
-    const searchParams = new URLSearchParams()
-
-    if (params.offset) searchParams.append("offset", params.offset.toString())
-    if (params.limit) searchParams.append("limit", params.limit.toString())
-    if (params.provider_name) searchParams.append("provider_name", params.provider_name)
-    if (params.channel) searchParams.append("channel", params.channel.toString())
-
-    const queryString = searchParams.toString()
-    const endpoint = `/v1/provider/search${queryString ? `?${queryString}` : ""}`
-
-    return api.get<ProviderListResponse>(endpoint)
+  async getList(): Promise<ApiResponse<ProviderListResponse>> {
+    return api.get<ProviderListResponse>("/v1/provider/list")
   },
 
   // 获取供应商详情
