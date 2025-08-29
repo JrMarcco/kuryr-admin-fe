@@ -56,26 +56,26 @@ export const businessApi = {
       searchParams.append('biz_name', params.biz_name)
     }
 
-    return api.get<BusinessListResponse>(`/v1/biz/search?${searchParams.toString()}`)
+    return api.get<BusinessListResponse>(`/v1/biz_info/search?${searchParams.toString()}`)
   },
 
   // 创建业务方
   async createBusiness(business: CreateBusinessRequest): Promise<ApiResponse<Business>> {
-    return api.post<Business>("/v1/biz/save", business)
+    return api.post<Business>("/v1/biz_info/save", business)
   },
 
   // 更新业务方
   async updateBusiness(business: UpdateBusinessRequest): Promise<ApiResponse<Business>> {
-    return api.put<Business>(`/v1/biz/${business.id}`, business)
+    return api.put<Business>(`/v1/biz_info/${business.id}`, business)
   },
 
   // 删除业务方
   async deleteBusiness(id: string): Promise<ApiResponse<void>> {
-    return api.delete<void>(`/v1/biz/${id}`)
+    return api.delete<void>(`/v1/biz_info/${id}`)
   },
 
   // 获取业务方操作员列表
   async getOperators(businessId: string): Promise<ApiResponse<Operator[]>> {
-    return api.post<Operator[]>("/v1/user/operators", { businessId })
+    return api.post<Operator[]>("/v1/biz_info/operators", { businessId })
   },
 }

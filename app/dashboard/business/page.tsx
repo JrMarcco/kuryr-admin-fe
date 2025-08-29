@@ -16,13 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Loader2, Settings, Users, Plus, Search } from "lucide-react"
+import { Loader2, Settings, Plus, Search } from "lucide-react"
 import { businessApi, type Business, type BusinessListRequest } from "@/lib/business-api"
 import { formatTimestamp } from "@/lib/utils"
 import { useApi } from "@/hooks/use-api"
 import { Pagination } from "@/components/pagination"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { OperatorsModal } from "@/components/operators-modal"
 import { BizConfigModal } from "@/components/biz-config-modal"
 
 interface CreateBusinessForm {
@@ -39,7 +38,6 @@ export default function BusinessPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null)
-  const [isOperatorsModalOpen, setIsOperatorsModalOpen] = useState(false)
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [createForm, setCreateForm] = useState<CreateBusinessForm>({
@@ -108,11 +106,6 @@ export default function BusinessPage() {
     setCurrentPage(page)
   }
 
-  const handleViewOperators = (business: Business) => {
-    setSelectedBusiness(business)
-    setIsOperatorsModalOpen(true)
-  }
-
   const handleViewConfig = (business: Business) => {
     setSelectedBusiness(business)
     setIsConfigModalOpen(true)
@@ -142,7 +135,7 @@ export default function BusinessPage() {
 
   return (
     <div className="w-full p-6 space-y-6 bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen">
-      <Breadcrumb items={breadcrumbItems}/>
+      <Breadcrumb items={breadcrumbItems} />
 
       <Card className="border-0 shadow-2xl bg-gray-800 border-gray-700">
         <CardHeader className="border-b border-gray-700 bg-gray-800">
@@ -163,12 +156,12 @@ export default function BusinessPage() {
               </div>
               <div className="flex gap-3">
                 <Button onClick={handleReset} disabled={loading}
-                        className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-md">
+                  className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-md">
                   重置
                 </Button>
                 <Button onClick={handleSearch} disabled={loading}
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
-                  <Search className="w-4 h-4 mr-2"/>
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-md">
+                  <Search className="w-4 h-4 mr-2" />
                   搜索
                 </Button>
               </div>
@@ -179,13 +172,13 @@ export default function BusinessPage() {
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-300 font-medium">
               共 <span className="text-blue-400 font-bold">{totalCount}</span> 条记录，当前第 <span
-              className="text-blue-400 font-bold">{currentPage}</span> 页
+                className="text-blue-400 font-bold">{currentPage}</span> 页
             </div>
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
               <DialogTrigger asChild>
                 <Button
                   className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg transform hover:scale-105 transition-all duration-200">
-                  <Plus className="mr-2 h-4 w-4"/>
+                  <Plus className="mr-2 h-4 w-4" />
                   新增业务
                 </Button>
               </DialogTrigger>
@@ -205,7 +198,7 @@ export default function BusinessPage() {
                       }
                     >
                       <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-                        <SelectValue placeholder="选择业务类型"/>
+                        <SelectValue placeholder="选择业务类型" />
                       </SelectTrigger>
                       <SelectContent className="bg-gray-800 border-gray-700">
                         <SelectItem value="individual" className="text-white hover:bg-gray-700">个人</SelectItem>
@@ -282,7 +275,7 @@ export default function BusinessPage() {
                     >
                       {createLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           创建中...
                         </>
                       ) : (
@@ -307,7 +300,7 @@ export default function BusinessPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[8%]">ID</TableHead>
-                  <TableHead className="w-[12%]">业务名</TableHead>
+                  <TableHead className="w-[18%]">业务名</TableHead>
                   <TableHead className="w-[8%]">类型</TableHead>
                   <TableHead className="w-[10%]">联系人</TableHead>
                   <TableHead className="w-[10%]">联系人邮箱</TableHead>
@@ -315,7 +308,6 @@ export default function BusinessPage() {
                   <TableHead className="w-[10%]">业务密钥</TableHead>
                   <TableHead className="w-[10%]">创建时间</TableHead>
                   <TableHead className="w-[10%]">更新时间</TableHead>
-                  <TableHead className="w-[6%]">操作员</TableHead>
                   <TableHead className="w-[6%]">配置</TableHead>
                 </TableRow>
               </TableHeader>
@@ -323,7 +315,7 @@ export default function BusinessPage() {
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={11} className="text-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin mx-auto"/>
+                      <Loader2 className="h-8 w-8 animate-spin mx-auto" />
                       <div className="mt-2">加载中...</div>
                     </TableCell>
                   </TableRow>
@@ -340,7 +332,7 @@ export default function BusinessPage() {
                         {business.id}
                       </TableCell>
                       <TableCell className="font-medium" title={business.biz_name}>
-                        <div className="truncate max-w-[120px] text-white font-semibold">{business.biz_name}</div>
+                        <div className="truncate text-white font-semibold">{business.biz_name}</div>
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -371,24 +363,13 @@ export default function BusinessPage() {
                       </TableCell>
                       <TableCell>
                         <Button
-                          onClick={() => handleViewOperators(business)}
-                          size="sm"
-                          variant="ghost"
-                          title="操作员"
-                          className="text-gray-300 hover:bg-blue-600 hover:text-white transition-colors"
-                        >
-                          <Users className="h-4 w-4"/>
-                        </Button>
-                      </TableCell>
-                      <TableCell>
-                        <Button
                           onClick={() => handleViewConfig(business)}
                           size="sm"
                           variant="ghost"
                           title="配置"
                           className="text-gray-300 hover:bg-orange-600 hover:text-white transition-colors"
                         >
-                          <Settings className="h-4 w-4"/>
+                          <Settings className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -416,19 +397,6 @@ export default function BusinessPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* 操作员模态框 */}
-      {selectedBusiness && (
-        <OperatorsModal
-          isOpen={isOperatorsModalOpen}
-          onClose={() => {
-            setIsOperatorsModalOpen(false)
-            setSelectedBusiness(null)
-          }}
-          businessId={selectedBusiness.id}
-          businessName={selectedBusiness.biz_name}
-        />
-      )}
 
       {/* 配置模态框 */}
       {selectedBusiness && (
